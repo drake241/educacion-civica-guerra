@@ -26,130 +26,149 @@
     "apoyo": 50
   },
   "introGuerra": {
-    "titulo": "Comienza la guerra",
-    "lead": "En la Cordillera del Sur estallan hostilidades entre Valmira y Cerro Azul. Cada gobierno debe decidir bajo presión: parlamento o presidencia, pero la región arde."
+    "titulo": "Empieza la guerra",
+    "lead": "Valmira y Cerro Azul pelean en la Cordillera del Sur.",
+    "contexto": "Los dos países vecinos llevan semanas discutiendo por la frontera. Ahora hay soldados, miedo en las ciudades y noticias todos los días. Valmira decide en el parlamento (diputados y primer ministro). Cerro Azul decide con presidente y asamblea. Cada ronda ustedes eligen qué hace su país."
   },
   "rondas": [
     {
       "id": "frontera",
       "tipo": "decision",
-      "titulo": "Frontera en alerta",
-      "lead": "Tropas en la frontera. El tiempo de deliberar se acaba.",
+      "titulo": "Soldados en la frontera",
+      "lead": "Hay tropas de los dos lados. Hay que decidir pronto.",
+      "contexto": "En la frontera se ven campamentos y tanques. Las familias preguntan si va a haber más pelea. Los soldados necesitan comida y combustible en pocos días. El gobierno puede: sentarse a hablar, mandar más soldados, o castigar al vecino cerrando el comercio. Cada camino cambia comida, comercio, orden y apoyo del pueblo.",
       "opciones": [
         {
           "id": "diplomacia",
-          "etiqueta": "A) Diplomacia y mesa de diálogo",
+          "etiqueta": "A) Hablar con el otro país",
+          "descripcion": "Enviar mensajeros a una mesa de conversación. La pelea puede bajar, pero el ejército sigue gastando mientras tanto. Mucha gente apoya la calma.",
           "efectos": { "alimentos": 0, "comercio": 5, "estabilidad": -5, "apoyo": 10 },
-          "headline": "La paciencia calma el frente, pero el reloj corre.",
+          "headline": "Se abre el diálogo. El frente se calma un poco, pero el reloj sigue corriendo.",
           "peacePath": true
         },
         {
           "id": "movilizar",
-          "etiqueta": "B) Movilizar reservas",
+          "etiqueta": "B) Llamar a más soldados",
+          "descripcion": "Traer reservas y reforzar la frontera. El país se siente más fuerte, pero cuesta dinero, sube el miedo y baja un poco el comercio.",
           "efectos": { "alimentos": -5, "comercio": -5, "estabilidad": 15, "apoyo": -5 },
-          "headline": "El ejército responde; los mercados se inquietan."
+          "headline": "Llegan más uniformes. Los mercados se ponen nerviosos."
         },
         {
           "id": "bloqueo",
-          "etiqueta": "C) Bloqueo comercial",
+          "etiqueta": "C) Cerrar comercio con el vecino",
+          "descripcion": "Prohibir exportar e importar con el otro país para presionarlo. Duele al vecino, pero también a los negocios de acá. Solo sirve si aún hay comercio que cerrar.",
           "efectos": { "alimentos": -5, "comercio": -15, "estabilidad": 5, "apoyo": -5 },
-          "headline": "Aranceles de represalia: exportaciones paralizadas.",
+          "headline": "Los camiones se detienen en la aduana. Precios raros en las tiendas.",
           "requiereComercioMin": 15,
-          "crossEvent": "Cerro Azul / Valmira siente el bloqueo en su comercio regional."
+          "crossEvent": "El vecino también siente el cierre comercial."
         }
       ]
     },
     {
       "id": "hambruna",
       "tipo": "decision",
-      "titulo": "Hambruna incipiente",
-      "lead": "Las reservas de granos bajan. Invierno duro.",
+      "titulo": "Poca comida",
+      "lead": "Los graneros van vaciándose.",
+      "contexto": "La guerra gasta recursos. En el campo hay menos cosecha y los camiones van con miedo por las carreteras. En las casas ya se nota: arroz, frijoles y pan suben de precio. El gobierno debe elegir cómo repartir lo que queda sin perder al pueblo.",
       "opciones": [
         {
           "id": "racionar",
-          "etiqueta": "A) Racionar alimentos",
+          "etiqueta": "A) Repartir porciones justas",
+          "descripcion": "Cada familia recibe un tope de comida por semana. Hay algo que comer, pero muchos se quejan en las calles.",
           "efectos": { "alimentos": 10, "comercio": 0, "estabilidad": 5, "apoyo": -15 },
-          "headline": "Hay comida, pero protestas en las plazas."
+          "headline": "Hay comida en las bodegas, pero la gente protesta en las plazas."
         },
         {
           "id": "importar",
-          "etiqueta": "B) Importar alimentos",
+          "etiqueta": "B) Comprar comida de afuera",
+          "descripcion": "Traer barcos o camiones del extranjero. Llena las mesas, pero sale caro y hace falta tener comercio abierto.",
           "efectos": { "alimentos": 20, "comercio": -12, "estabilidad": 0, "apoyo": 5 },
-          "headline": "Llega trigo extranjero; la cuenta duele.",
+          "headline": "Llega trigo de otros países. La cuenta del Estado duele.",
           "requiereComercioMin": 10
         },
         {
           "id": "expropiar",
-          "etiqueta": "C) Requisar graneros",
+          "etiqueta": "C) Tomar grano de los graneros grandes",
+          "descripcion": "El Estado obliga a entregar reservas privadas para repartir ya. Comida rápida, pero la gente pierde confianza en el gobierno.",
           "efectos": { "alimentos": 25, "comercio": -8, "estabilidad": -10, "apoyo": -20 },
-          "headline": "Pan hoy; desconfianza mañana."
+          "headline": "Hay pan hoy; mañana nadie confía igual."
         }
       ]
     },
     {
       "id": "sanciones",
       "tipo": "decision",
-      "titulo": "Sanciones internacionales",
-      "lead": "Potencias externas congelan acuerdos comerciales.",
+      "titulo": "Otros países nos presionan",
+      "lead": "Naciones lejanas amenazan con no vender ni comprar.",
+      "contexto": "Países grandes de otros continentes dicen: o bajan la guerra o no hacen negocios con ustedes. Eso puede dejar sin medicinas, repuestos y empleos en puertos. Valmira y Cerro Azul deben responder sin quedarse solos en el mundo.",
       "opciones": [
         {
           "id": "acuerdos",
-          "etiqueta": "A) Negociar acuerdos",
+          "etiqueta": "A) Negociar y firmar acuerdos",
+          "descripcion": "Aceptar parte de lo que piden a cambio de volver a comerciar. No es popular para los orgullosos, pero ayuda a la economía.",
           "efectos": { "alimentos": 5, "comercio": 12, "estabilidad": -5, "apoyo": 5 },
-          "headline": "Vuelven los barcos; el orgullo cede.",
+          "headline": "Vuelven algunos barcos. El orgullo nacional cede un poco.",
           "peacePath": true
         },
         {
           "id": "alternos",
-          "etiqueta": "B) Mercados alternos",
+          "etiqueta": "B) Buscar otros compradores",
+          "descripcion": "Intentar vender y comprar con países que no están en la pelea. Es incierto: a veces funciona, a veces los precios saltan.",
           "efectos": { "alimentos": 0, "comercio": -5, "estabilidad": 0, "apoyo": 0 },
-          "headline": "Precios impredecibles."
+          "headline": "Nuevos contactos, precios impredecibles."
         },
         {
           "id": "aranceles",
-          "etiqueta": "C) Retorsión arancelaria",
+          "etiqueta": "C) Subir impuestos al comercio enemigo",
+          "descripcion": "Responder con castigos comerciales duros. Muestra fuerza, pero la comida y el comercio caen más.",
           "efectos": { "alimentos": -10, "comercio": -18, "estabilidad": 8, "apoyo": -8 },
-          "headline": "Guerra comercial; hambruna acecha.",
-          "crossEvent": "El vecino responde con aranceles recíprocos."
+          "headline": "Guerra de precios. En las tiendas falta de todo.",
+          "crossEvent": "El vecino responde con impuestos parecidos."
         }
       ]
     },
     {
       "id": "tregua",
       "tipo": "decision",
-      "titulo": "Propuesta de tregua",
-      "lead": "Organismos internacionales ofrecen mesa de paz temporal.",
+      "titulo": "Oferta de pausa en la pelea",
+      "lead": "Organismos internacionales proponen dejar de disparar un tiempo.",
+      "contexto": "Un grupo de países neutrales ofrece una pausa: nadie dispara por varias semanas y se habla en una mesa. Algunos quieren descanso y comida; otros creen que es trampa del enemigo. La decisión define si la región respira o sigue el fuego.",
       "opciones": [
         {
           "id": "aceptar_tregua",
-          "etiqueta": "A) Aceptar tregua y negociar",
+          "etiqueta": "A) Aceptar la pausa y hablar",
+          "descripcion": "Parar combates y mandar delegados. La gente respira, aunque los militares gruñen.",
           "efectos": { "alimentos": 5, "comercio": 8, "estabilidad": -8, "apoyo": 12 },
-          "headline": "Silencio en el frente; esperanza cautelosa.",
+          "headline": "Silencio en el frente. Hay esperanza cautelosa.",
           "peacePath": true
         },
         {
           "id": "tregua_condicional",
-          "etiqueta": "B) Tregua con condiciones duras",
+          "etiqueta": "B) Pausa, pero con exigencias duras",
+          "descripcion": "Aceptar solo si el otro cumple condiciones difíciles. Puede funcionar o romperse la tregua rápido.",
           "efectos": { "alimentos": 0, "comercio": 3, "estabilidad": 5, "apoyo": -3 },
-          "headline": "Paz frágil bajo presión."
+          "headline": "Paz frágil: todos desconfían."
         },
         {
           "id": "rechazar_tregua",
-          "etiqueta": "C) Rechazar y seguir la guerra",
+          "etiqueta": "C) No parar; seguir la guerra",
+          "descripcion": "Rechazar la mesa y seguir la campaña. Refuerza a los duros, pero agota comida y apoyo.",
           "efectos": { "alimentos": -8, "comercio": -10, "estabilidad": 12, "apoyo": -10 },
-          "headline": "La guerra continúa; el cansancio crece."
+          "headline": "La guerra sigue. El cansancio crece en las casas."
         }
       ]
     },
     {
       "id": "desenlace",
       "tipo": "decision",
-      "titulo": "Última decisión",
-      "lead": "Una elección final definirá el futuro de la Cordillera del Sur.",
+      "titulo": "Última gran decisión",
+      "lead": "Lo que elijan ahora marca el final.",
+      "contexto": "Lleván meses de conflicto. Los medidores muestran si el país aguanta o no. Es el momento de buscar paz de verdad, negociar desde una posición fuerte, o lanzar un ultimátum arriesgado. Después de esto el profesor cierra la historia de la región.",
       "opciones": [
         {
           "id": "tratado_paz",
-          "etiqueta": "A) Firmar tratado de paz",
+          "etiqueta": "A) Firmar paz",
+          "descripcion": "Tratar de cerrar la guerra con un tratado. Requiere ceder algo, pero la gente suele premiar el fin del miedo.",
           "efectos": { "alimentos": 8, "comercio": 10, "estabilidad": -5, "apoyo": 15 },
           "headline": "Plumas en lugar de balas — por ahora.",
           "peacePath": true
@@ -157,14 +176,16 @@
         {
           "id": "victoria_parcial",
           "etiqueta": "B) Negociar desde la fuerza",
+          "descripcion": "Ir a la mesa exigiendo ventajas porque el ejército va ganando terreno. Puede dar orden, pero poca paz real.",
           "efectos": { "alimentos": -5, "comercio": -5, "estabilidad": 10, "apoyo": -5 },
-          "headline": "Ventaja táctica, paz lejana."
+          "headline": "Ventaja en el mapa; paz lejana."
         },
         {
           "id": "ultimatum",
-          "etiqueta": "C) Ultimátum total",
+          "etiqueta": "C) Ultimátum: rendirse o seguir",
+          "descripcion": "Dar un plazo al enemigo: o se rinde o la ofensiva sigue fuerte. Apuesta extrema: puede colapsar la economía y el apoyo.",
           "efectos": { "alimentos": -12, "comercio": -15, "estabilidad": 15, "apoyo": -15 },
-          "headline": "Apuesta extrema; el país tiembla."
+          "headline": "Apuesta total. El país tiembla."
         }
       ]
     }
@@ -172,33 +193,33 @@
   "finales": {
     "paz": {
       "id": "paz",
-      "titulo": "Paz en la Cordillera",
-      "texto": "Valmira y Cerro Azul logran un equilibrio. No es perfecto, pero la guerra cede al diálogo."
+      "titulo": "Paz en la cordillera",
+      "texto": "Los dos países logran parar la pelea a tiempo. No es perfecto, pero la gente puede planear el mañana."
     },
     "valmira": {
       "id": "valmira",
-      "titulo": "Ventaja de Valmira",
-      "texto": "Valmira supera la crisis mejor que su vecino."
+      "titulo": "Valmira sale mejor",
+      "texto": "Valmira resistió la crisis un poco mejor que su vecino."
     },
     "cerroAzul": {
       "id": "cerroAzul",
-      "titulo": "Ventaja de Cerro Azul",
-      "texto": "Cerro Azul resiste y gana la partida geopolítica."
+      "titulo": "Cerro Azul sale mejor",
+      "texto": "Cerro Azul aguantó y termina en mejor forma."
     },
     "colapso_valmira": {
       "id": "colapso_valmira",
-      "titulo": "Colapso de Valmira",
-      "texto": "Los indicadores de Valmira llegaron a cero; el gobierno cae."
+      "titulo": "Valmira no aguanta",
+      "texto": "Comida, comercio, orden o apoyo llegaron a cero. El gobierno de Valmira cae."
     },
     "colapso_cerro": {
       "id": "colapso_cerro",
-      "titulo": "Colapso de Cerro Azul",
-      "texto": "Cerro Azul no sostuvo la presión de la guerra."
+      "titulo": "Cerro Azul no aguanta",
+      "texto": "Cerro Azul no pudo sostener la guerra."
     },
     "empate": {
       "id": "empate",
       "titulo": "Empate tenso",
-      "texto": "Ningún bando claramente vencedor; región inestable."
+      "texto": "Nadie gana claro. La región sigue inestable."
     }
   },
   "crisis": []

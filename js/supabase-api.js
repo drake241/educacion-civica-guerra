@@ -155,8 +155,10 @@ const CivicaSupabase = (() => {
 })();
 
 const CivicaSession = {
+  COUNTRY_KEY: "civica_country_pref",
   savePlayer(p) {
     localStorage.setItem("civica_player", JSON.stringify(p));
+    if (p?.country) localStorage.setItem(this.COUNTRY_KEY, p.country);
   },
   loadPlayer() {
     try {
@@ -164,6 +166,13 @@ const CivicaSession = {
     } catch {
       return null;
     }
+  },
+  loadCountryPref() {
+    const v = localStorage.getItem(this.COUNTRY_KEY);
+    return v === "valmira" || v === "cerroAzul" ? v : null;
+  },
+  clearCountryPref() {
+    localStorage.removeItem(this.COUNTRY_KEY);
   },
   clear() {
     localStorage.removeItem("civica_player");

@@ -9,17 +9,20 @@
 <body>
 <div class="wrap">
   <h1>Entrar a la guerra</h1>
-  <p class="lead">Elegí tu país. Te asignaremos un rol al azar.</p>
+  <p class="lead" id="leadText">Elegí tu país una vez. Te damos un rol al azar.</p>
   <div class="card">
     <label class="field">Código de sala</label>
     <input id="code" maxlength="6" placeholder="Ej. AB12C" autocomplete="off">
     <label class="field">Tu nombre</label>
     <input id="nick" maxlength="24" placeholder="Nombre o apodo">
-    <p class="field">País</p>
-    <div class="btn-row">
-      <button type="button" class="btn country-valmira" id="pickValmira">Valmira (parlamento)</button>
-      <button type="button" class="btn country-cerro" id="pickCerro">Cerro Azul (presidencia)</button>
+    <div id="countryPick">
+      <p class="field">País</p>
+      <div class="btn-row" id="countryButtons">
+        <button type="button" class="btn country-valmira" id="pickValmira">Valmira (parlamento)</button>
+        <button type="button" class="btn country-cerro" id="pickCerro">Cerro Azul (presidente)</button>
+      </div>
     </div>
+    <div id="countryLocked" class="hidden"></div>
     <p class="error hidden" id="err"></p>
     <button class="btn" id="joinBtn" disabled>Unirme</button>
   </div>
@@ -29,22 +32,74 @@
 <script src="js/supabase-api.js"></script>
 <script>
 const params = new URLSearchParams(location.search);
-if (params.get("room")) document.getElementById("code").value = params.get("room");
+const codeInput = document.getElementById("code");
+if (params.get("room")) codeInput.value = params.get("room");
 
-let country = null;
-document.getElementById("pickValmira").onclick = () => { country = "valmira"; document.getElementById("joinBtn").disabled = false; };
-document.getElementById("pickCerro").onclick = () => { country = "cerroAzul"; document.getElementById("joinBtn").disabled = false; };
+const saved = CivicaSession.loadPlayer();
+const roomFromUrl = params.get("room")?.toUpperCase();
+if (saved?.player_id && saved?.code && roomFromUrl && saved.code.toUpperCase() === roomFromUrl) {
+  location.href = "jugar.html";
+}
+
+let country = CivicaSession.loadCountryPref();
+const nickInput = document.getElementById("nick");
+try {
+  const lastNick = localStorage.getItem("civica_nick");
+  if (lastNick) nickInput.value = lastNick;
+} catch (_) {}
+
+function applyCountryUI() {
+  const pick = document.getElementById("countryPick");
+  const locked = document.getElementById("countryLocked");
+  const joinBtn = document.getElementById("joinBtn");
+  if (!country) {
+    pick.classList.remove("hidden");
+    locked.classList.add("hidden");
+    joinBtn.disabled = true;
+    return;
+  }
+  pick.classList.add("hidden");
+  locked.classList.remove("hidden");
+  const isV = country === "valmira";
+  locked.className = `country-picked ${isV ? "country-picked-valmira" : "country-picked-cerro"}`;
+  locked.innerHTML = `<span>Tu equipo: <strong>${isV ? "Valmira" : "Cerro Azul"}</strong></span>
+    <button type="button" class="btn btn-link" id="changeCountry">Cambiar equipo</button>`;
+  document.getElementById("changeCountry").onclick = () => {
+    CivicaSession.clearCountryPref();
+    country = null;
+    applyCountryUI();
+  };
+  document.getElementById("leadText").textContent =
+    "Ya tenés equipo guardado en este celular. Solo código y nombre.";
+  joinBtn.disabled = false;
+}
+
+document.getElementById("pickValmira").onclick = () => {
+  country = "valmira";
+  localStorage.setItem(CivicaSession.COUNTRY_KEY, country);
+  applyCountryUI();
+};
+document.getElementById("pickCerro").onclick = () => {
+  country = "cerroAzul";
+  localStorage.setItem(CivicaSession.COUNTRY_KEY, country);
+  applyCountryUI();
+};
+
+applyCountryUI();
 
 document.getElementById("joinBtn").onclick = async () => {
   const err = document.getElementById("err");
   err.classList.add("hidden");
+  if (!country) {
+    err.textContent = "Elegí un país primero";
+    err.classList.remove("hidden");
+    return;
+  }
   try {
     CivicaSupabase.init();
-    const data = await CivicaSupabase.joinRoom(
-      document.getElementById("code").value,
-      document.getElementById("nick").value || "Jugador",
-      country
-    );
+    const nick = document.getElementById("nick").value.trim() || "Jugador";
+    localStorage.setItem("civica_nick", nick);
+    const data = await CivicaSupabase.joinRoom(codeInput.value, nick, country);
     CivicaSession.savePlayer(data);
     location.href = "jugar.html";
   } catch (e) {

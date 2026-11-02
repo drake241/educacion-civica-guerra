@@ -66,6 +66,92 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   margin: 1rem 0;
 }
 @media (min-width: 800px) { .map-grid { grid-template-columns: 1fr 1fr; } }
+.world-map-wrap { margin: 1rem 0; }
+.world-scene {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  background: #0c1445;
+  min-height: 280px;
+}
+.world-stars {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 10% 20%, #fff, transparent),
+    radial-gradient(1px 1px at 30% 8%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 70% 15%, #fff, transparent),
+    radial-gradient(1px 1px at 85% 30%, #fff, transparent),
+    radial-gradient(1px 1px at 50% 5%, #fff, transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.world-cloud {
+  position: absolute;
+  width: 120px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  filter: blur(2px);
+  pointer-events: none;
+  animation: world-drift 28s linear infinite;
+}
+.world-cloud-a { top: 12%; left: -10%; }
+.world-cloud-b { top: 22%; left: 60%; animation-duration: 36s; animation-direction: reverse; }
+@keyframes world-drift {
+  from { transform: translateX(-20%); }
+  to { transform: translateX(120%); }
+}
+.world-svg { display: block; width: 100%; height: auto; vertical-align: middle; }
+.world-hud {
+  position: absolute;
+  bottom: 12px;
+  width: min(42%, 220px);
+  padding: 0.5rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 0.78rem;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+}
+.world-hud-valmira { left: 12px; border-left: 4px solid var(--valmira); }
+.world-hud-cerro { right: 12px; border-left: 4px solid var(--cerro); }
+.world-hud strong { display: block; font-size: 0.95rem; }
+.world-score { font-weight: 700; color: var(--muted); font-size: 0.75rem; }
+.world-mini-meter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+  color: var(--text);
+}
+.option-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin: 0.5rem 0;
+  text-align: left;
+}
+.option-card p { margin-top: 0.35rem; font-size: 0.9rem; color: var(--muted); }
+.country-picked {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  margin: 0.75rem 0;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.country-picked-valmira { background: var(--valmira); }
+.country-picked-cerro { background: var(--cerro); }
+.btn-link {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  color: #fff;
+  font-size: 0.85rem;
+  padding: 0.35rem 0.6rem;
+}
 .map-country { padding: 1rem; border-radius: 12px; background: var(--card); box-shadow: 0 2px 12px rgba(0,0,0,.08); }
 .status-pill {
   display: inline-block;

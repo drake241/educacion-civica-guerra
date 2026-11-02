@@ -52,12 +52,23 @@ const CivicaContent = (() => {
     return Math.round(((m.alimentos + m.comercio + m.estabilidad + m.apoyo) / 4));
   }
 
+  const METER_LABELS = {
+    alimentos: "Comida",
+    comercio: "Comercio",
+    estabilidad: "Orden",
+    apoyo: "Apoyo del pueblo",
+  };
+
+  function meterLabel(key) {
+    return METER_LABELS[key] ?? key;
+  }
+
   function statusIcons(meters) {
     const icons = [];
-    if ((meters.alimentos ?? 100) < 35) icons.push({ id: "hambre", label: "Hambruna" });
-    if ((meters.comercio ?? 100) < 35) icons.push({ id: "aranceles", label: "Aranceles / comercio" });
+    if ((meters.alimentos ?? 100) < 35) icons.push({ id: "hambre", label: "Poca comida" });
+    if ((meters.comercio ?? 100) < 35) icons.push({ id: "aranceles", label: "Comercio difícil" });
     if ((meters.apoyo ?? 100) < 30) icons.push({ id: "protestas", label: "Protestas" });
-    if ((meters.estabilidad ?? 100) < 30) icons.push({ id: "caos", label: "Inestabilidad" });
+    if ((meters.estabilidad ?? 100) < 30) icons.push({ id: "caos", label: "Mucho desorden" });
     return icons;
   }
 
@@ -138,6 +149,7 @@ const CivicaContent = (() => {
     applyDelta,
     isCollapsed,
     score,
+    meterLabel,
     statusIcons,
     computeEnding,
     tallyValmiraOptions,

@@ -23,7 +23,7 @@
     <button class="btn" id="startWar">Iniciar guerra</button>
   </div>
   <p>Fase: <strong id="phaseTxt"></strong> · Ronda: <strong id="roundTxt"></strong></p>
-  <div class="map-grid" id="mapGrid"></div>
+  <div class="world-map-wrap" id="worldMap" aria-live="polite"></div>
   <div class="crisis-banner" id="crisisBox"></div>
   <div class="btn-row" id="controls"></div>
   <div class="card"><h2>Eventos entre países</h2><ul id="eventLog"></ul></div>
@@ -33,6 +33,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="js/config.js"></script>
 <script src="js/game-content.js"></script>
+<script src="js/world-map.js"></script>
 <script src="js/supabase-api.js"></script>
 <script>
 const loginEl = document.getElementById("login");
@@ -69,22 +70,14 @@ async function ensureRoom() {
 function renderMap() {
   const c = CivicaContent.get();
   if (!room) return;
-  const vm = room.valmira_meters;
-  const cm = room.cerro_meters;
-  const grid = document.getElementById("mapGrid");
-  grid.innerHTML = ["valmira", "cerroAzul"].map((key) => {
-    const p = c.paises[key];
-    const m = key === "valmira" ? vm : cm;
-    const icons = CivicaContent.statusIcons(m).map((i) => `<span class="status-pill">${i.label}</span>`).join("");
-    return `<div class="map-country ${key === "valmira" ? "country-valmira" : "country-cerro"}">
-      <h2>${p.nombreCompleto}</h2>
-      <p class="score">Puntaje ${CivicaContent.score(m)}</p>
-      <div class="status-icons">${icons || "<span class='note'>Estable por ahora</span>"}</div>
-      ${["alimentos","comercio","estabilidad","apoyo"].map((k) =>
-        `<div class="meter"><label><span>${k}</span><span>${m[k]}</span></label><div class="bar"><span style="width:${m[k]}%"></span></div></div>`
-      ).join("")}
-    </div>`;
-  }).join("");
+  CivicaWorldMap.render(document.getElementById("worldMap"), {
+    paises: c.paises,
+    valmiraMeters: room.valmira_meters,
+    cerroMeters: room.cerro_meters,
+    statusIcons: CivicaContent.statusIcons,
+    scoreFn: CivicaContent.score,
+    meterLabel: CivicaContent.meterLabel,
+  });
 }
 
 function renderEvents() {
@@ -147,8 +140,8 @@ async function applyConsequences() {
 
   let vDelta = { estabilidad: -5 };
   let cDelta = { apoyo: -3 };
-  let vHead = "El parlamento no logró mayoría clara.";
-  let cHead = "La asamblea rechazó al Presidente.";
+  let vHead = "En Valmira no hubo acuerdo claro.";
+  let cHead = "En Cerro Azul la asamblea dijo no al presidente.";
   let cross = null;
   let peaceV = false;
   let peaceC = false;
@@ -202,9 +195,9 @@ async function refresh() {
   const crisisBox = document.getElementById("crisisBox");
   if (room.subphase === "intro") {
     const ig = CivicaContent.get().introGuerra;
-    crisisBox.innerHTML = `<h2>${ig.titulo}</h2><p>${ig.lead}</p>`;
+    crisisBox.innerHTML = `<h2>${ig.titulo}</h2><p>${ig.lead}</p>${ig.contexto ? `<p>${ig.contexto}</p>` : ""}`;
   } else if (round) {
-    crisisBox.innerHTML = `<h2>${round.titulo}</h2><p>${round.lead}</p>`;
+    crisisBox.innerHTML = `<h2>${round.titulo}</h2><p>${round.lead}</p>${round.contexto ? `<p>${round.contexto}</p>` : ""}`;
   } else crisisBox.innerHTML = `<p>Fin de la partida</p>`;
   renderMap();
   renderEvents();
