@@ -66,14 +66,36 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   margin: 1rem 0;
 }
 @media (min-width: 800px) { .map-grid { grid-template-columns: 1fr 1fr; } }
-.world-map-wrap { margin: 1rem 0; }
+.world-map-section {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 3px solid #cbd5e1;
+}
+.world-map-section h2 { margin-bottom: 0.25rem; }
+.world-map-lead { margin-bottom: 0.75rem; }
+.world-map-wrap { margin: 0; }
 .world-scene {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
   background: #0c1445;
-  min-height: 280px;
+  min-height: min(42vh, 420px);
+}
+@media (min-width: 900px) {
+  .world-scene { min-height: 440px; }
+}
+.world-scene::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 16px 16px;
+  image-rendering: pixelated;
+  opacity: 0.5;
 }
 .world-stars {
   position: absolute;

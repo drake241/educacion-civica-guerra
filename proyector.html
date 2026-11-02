@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proyector — Valmira vs Cerro Azul</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20261101b">
 </head>
 <body>
 <div class="wrap login-box" id="login">
@@ -23,18 +23,22 @@
     <button class="btn" id="startWar">Iniciar guerra</button>
   </div>
   <p>Fase: <strong id="phaseTxt"></strong> · Ronda: <strong id="roundTxt"></strong></p>
-  <div class="world-map-wrap" id="worldMap" aria-live="polite"></div>
   <div class="crisis-banner" id="crisisBox"></div>
   <div class="btn-row" id="controls"></div>
   <div class="card"><h2>Eventos entre países</h2><ul id="eventLog"></ul></div>
+  <section class="world-map-section" aria-labelledby="worldMapTitle">
+    <h2 id="worldMapTitle">Vista desde el cielo</h2>
+    <p class="note world-map-lead">Dos países vistos desde arriba — como un mapa de juego.</p>
+    <div class="world-map-wrap" id="worldMap" aria-live="polite"></div>
+  </section>
   <p class="error hidden" id="err"></p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="js/config.js"></script>
-<script src="js/game-content.js"></script>
-<script src="js/world-map.js"></script>
-<script src="js/supabase-api.js"></script>
+<script src="js/config.js?v=20261101b"></script>
+<script src="js/game-content.js?v=20261101b"></script>
+<script src="js/world-map.js?v=20261101b"></script>
+<script src="js/supabase-api.js?v=20261101b"></script>
 <script>
 const loginEl = document.getElementById("login");
 const mainEl = document.getElementById("main");
@@ -68,9 +72,14 @@ async function ensureRoom() {
 }
 
 function renderMap() {
+  const el = document.getElementById("worldMap");
   const c = CivicaContent.get();
-  if (!room) return;
-  CivicaWorldMap.render(document.getElementById("worldMap"), {
+  if (!room || !el) return;
+  if (typeof CivicaWorldMap === "undefined") {
+    el.innerHTML = `<p class="error">No cargó el mapa. Refrescá con Ctrl+Shift+R.</p>`;
+    return;
+  }
+  CivicaWorldMap.render(el, {
     paises: c.paises,
     valmiraMeters: room.valmira_meters,
     cerroMeters: room.cerro_meters,
@@ -221,7 +230,7 @@ document.getElementById("startWar").onclick = async () => {
 async function boot() {
   try {
     CivicaSupabase.init();
-    await CivicaContent.load();
+    await CivicaContent.load("contenido.json?v=20261101b");
     await ensureRoom();
     await refresh();
     CivicaSupabase.subscribeRoom(roomId, refresh);
