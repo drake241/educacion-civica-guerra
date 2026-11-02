@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Proyector — Valmira vs Cerro Azul</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap login-box" id="login">
+  <div class="card login-box">
+    <h1>Proyector (profesor)</h1>
+    <label class="field">Contraseña</label>
+    <input type="password" id="pin" value="">
+    <button class="btn" id="pinBtn">Entrar</button>
+  </div>
+</div>
+<div class="wrap hidden" id="main">
+  <h1>Mapa — Cordillera del Sur</h1>
+  <p class="lead">Sala <strong id="roomCode">—</strong> · <a id="joinLink" href="#" target="_blank">Enlace alumnos</a></p>
+  <div class="btn-row">
+    <button class="btn" id="createRoom">Nueva sala</button>
+    <button class="btn" id="startWar">Iniciar guerra</button>
+  </div>
+  <p>Fase: <strong id="phaseTxt"></strong> · Ronda: <strong id="roundTxt"></strong></p>
+  <div class="map-grid" id="mapGrid"></div>
+  <div class="crisis-banner" id="crisisBox"></div>
+  <div class="btn-row" id="controls"></div>
+  <div class="card"><h2>Eventos entre países</h2><ul id="eventLog"></ul></div>
+  <p class="error hidden" id="err"></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="js/config.js"></script>
+<script src="js/game-content.js"></script>
+<script src="js/supabase-api.js"></script>
+<script>
+const loginEl = document.getElementById("login");
+const mainEl = document.getElementById("main");
+let roomId = sessionStorage.getItem("civica_room_id");
+let roomCode = sessionStorage.getItem("civica_room_code");
+let room = null;
+let players = [];
+
+document.getElementById("pinBtn").onclick = () => {
+  if (document.getElementById("pin").value !== TEACHER_PIN) {
+    alert("Pin incorrecto");
+    return;
+  }
+  loginEl.classList.add("hidden");
+  mainEl.classList.remove("hidden");
+  boot();
+};
+
+function joinUrl(code) {
+  const base = location.href.replace(/proyector\.html.*$/, "");
+  return `${base}join.html?room=${encodeURIComponent(code)}`;
+}
+
+async function ensureRoom() {
+  if (roomId && roomCode) return;
+  const created = await CivicaSupabase.createRoom();
+  roomId = created.room_id;
+  roomCode = created.code;
+  sessionStorage.setItem("civica_room_id", roomId);
+  sessionStorage.setItem("civica_room_code", roomCode);
+}
+
+function renderMap() {
+  const c = CivicaContent.get();
+  if (!room) return;
+  const vm = room.valmira_meters;
+  const cm = room.cerro_meters;
+  const grid = document.getElementById("mapGrid");
+  grid.innerHTML = ["valmira", "cerroAzul"].map((key) => {
+    const p = c.paises[key];
+    const m = key === "valmira" ? vm : cm;
+    const icons = CivicaContent.statusIcons(m).map((i) => `<span class="status-pill">${i.label}</span>`).join("");
+    return `<div class="map-country ${key === "valmira" ? "country-valmira" : "country-cerro"}">
+      <h2>${p.nombreCompleto}</h2>
+      <p class="score">Puntaje ${CivicaContent.score(m)}</p>
+      <div class="status-icons">${icons || "<span class='note'>Estable por ahora</span>"}</div>
+      ${["alimentos","comercio","estabilidad","apoyo"].map((k) =>
+        `<div class="meter"><label><span>${k}</span><span>${m[k]}</span></label><div class="bar"><span style="width:${m[k]}%"></span></div></div>`
+      ).join("")}
+    </div>`;
+  }).join("");
+}
+
+function renderEvents() {
+  const ul = document.getElementById("eventLog");
+  const log = room?.event_log ?? [];
+  ul.innerHTML = log.slice().reverse().map((e) => {
+    let t = `Ronda ${e.round}: ${e.valmira} | ${e.cerro}`;
+    if (e.cross) t += ` → ${e.cross}`;
+    return `<li>${t}</li>`;
+  }).join("") || "<li>—</li>";
+}
+
+function renderControls() {
+  const box = document.getElementById("controls");
+  const sub = room?.subphase;
+  box.innerHTML = "";
+  const add = (label, fn) => {
+    const b = document.createElement("button");
+    b.className = "btn btn-secondary";
+    b.textContent = label;
+    b.onclick = fn;
+    box.appendChild(b);
+  };
+  if (sub === "intro") add("Abrir discusión", () => teacherSub("discuss"));
+  if (sub === "discuss") add("Abrir votación", () => teacherSub("vote"));
+  if (sub === "vote") add("Cerrar voto y revelar", closeVoteAndReveal);
+  if (sub === "reveal") add("Aplicar consecuencias", applyConsequences);
+  if (sub === "consequence" && room.phase === "playing") add("Siguiente ronda", nextRound);
+  if (room?.phase === "finished" && !room.ending) add("Calcular final", calcEnding);
+}
+
+async function teacherSub(subphase) {
+  await CivicaSupabase.teacherSetSubphase(roomId, TEACHER_PIN, subphase);
+  await refresh();
+}
+
+async function closeVoteAndReveal() {
+  const round = CivicaContent.getRound(room.round_index);
+  const votes = await CivicaSupabase.fetchVotes(roomId, room.round_index);
+  const vTally = CivicaContent.tallyValmiraOptions(votes, players);
+  const cTally = CivicaContent.tallyCerro(votes, players);
+  let vOpt = vTally.chosen;
+  let cOpt = cTally.chosen;
+  if (!vOpt && round?.opciones?.[0]) vOpt = round.opciones[0].id;
+  if (!cOpt && round?.opciones?.[0]) cOpt = round.opciones[0].id;
+  if (!cTally.approved) cOpt = null;
+  await CivicaSupabase.teacherCloseVote(roomId, TEACHER_PIN, vOpt, cOpt || "rechazada", cTally.yes, cTally.no);
+  await refresh();
+}
+
+async function applyConsequences() {
+  const round = CivicaContent.getRound(room.round_index);
+  const rr = room.round_results?.[String(room.round_index)];
+  const vm = room.valmira_meters;
+  const cm = room.cerro_meters;
+  const vOpt = CivicaContent.findOption(round, rr?.valmira_chosen);
+  const cOpt = rr?.cerro_chosen && rr.cerro_chosen !== "rechazada"
+    ? CivicaContent.findOption(round, rr.cerro_chosen)
+    : null;
+
+  let vDelta = { estabilidad: -5 };
+  let cDelta = { apoyo: -3 };
+  let vHead = "El parlamento no logró mayoría clara.";
+  let cHead = "La asamblea rechazó al Presidente.";
+  let cross = null;
+  let peaceV = false;
+  let peaceC = false;
+
+  if (vOpt && !CivicaContent.optionBlocked(vm, vOpt)) {
+    vDelta = vOpt.efectos;
+    vHead = vOpt.headline;
+    if (vOpt.peacePath) peaceV = true;
+    if (vOpt.crossEvent) cross = vOpt.crossEvent;
+  }
+  if (cOpt && !CivicaContent.optionBlocked(cm, cOpt)) {
+    cDelta = cOpt.efectos;
+    cHead = cOpt.headline;
+    if (cOpt.peacePath) peaceC = true;
+    if (cOpt.crossEvent) cross = cOpt.crossEvent;
+  }
+
+  await CivicaSupabase.teacherApplyConsequence(roomId, TEACHER_PIN, {
+    valmiraDelta: vDelta,
+    cerroDelta: cDelta,
+    valmiraHeadline: vHead,
+    cerroHeadline: cHead,
+    crossEvent: cross,
+    peaceValmira: peaceV,
+    peaceCerro: peaceC,
+  });
+  await refresh();
+}
+
+async function nextRound() {
+  await CivicaSupabase.teacherNextRound(roomId, TEACHER_PIN);
+  await refresh();
+}
+
+async function calcEnding() {
+  room = await CivicaSupabase.fetchRoom(roomId);
+  const fin = CivicaContent.computeEnding(room);
+  await CivicaSupabase.teacherSetEnding(roomId, TEACHER_PIN, fin.id);
+  await refresh();
+}
+
+async function refresh() {
+  room = await CivicaSupabase.fetchRoom(roomId);
+  players = await CivicaSupabase.fetchPlayers(roomId);
+  document.getElementById("roomCode").textContent = roomCode;
+  document.getElementById("joinLink").href = joinUrl(roomCode);
+  document.getElementById("joinLink").textContent = joinUrl(roomCode);
+  document.getElementById("phaseTxt").textContent = `${room.phase} / ${room.subphase}`;
+  document.getElementById("roundTxt").textContent = String(room.round_index + 1);
+  const round = CivicaContent.getRound(room.round_index);
+  const crisisBox = document.getElementById("crisisBox");
+  if (room.subphase === "intro") {
+    const ig = CivicaContent.get().introGuerra;
+    crisisBox.innerHTML = `<h2>${ig.titulo}</h2><p>${ig.lead}</p>`;
+  } else if (round) {
+    crisisBox.innerHTML = `<h2>${round.titulo}</h2><p>${round.lead}</p>`;
+  } else crisisBox.innerHTML = `<p>Fin de la partida</p>`;
+  renderMap();
+  renderEvents();
+  renderControls();
+}
+
+document.getElementById("createRoom").onclick = async () => {
+  sessionStorage.removeItem("civica_room_id");
+  sessionStorage.removeItem("civica_room_code");
+  roomId = roomCode = null;
+  await ensureRoom();
+  await refresh();
+};
+
+document.getElementById("startWar").onclick = async () => {
+  await CivicaSupabase.teacherStartWar(roomId, TEACHER_PIN);
+  await CivicaSupabase.teacherSetSubphase(roomId, TEACHER_PIN, "intro");
+  await refresh();
+};
+
+async function boot() {
+  try {
+    CivicaSupabase.init();
+    await CivicaContent.load();
+    await ensureRoom();
+    await refresh();
+    CivicaSupabase.subscribeRoom(roomId, refresh);
+  } catch (e) {
+    document.getElementById("err").textContent = e.message;
+    document.getElementById("err").classList.remove("hidden");
+  }
+}
+</script>
+</body>
+</html>

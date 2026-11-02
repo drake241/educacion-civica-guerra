@@ -3,91 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Valmira vs Cerro Azul — Vista pública</title>
+<title>Valmira vs Cerro Azul</title>
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div class="wrap" id="app">
-  <p>Cargando…</p>
+<div class="wrap">
+  <h1>Valmira vs Cerro Azul</h1>
+  <p class="lead">Guerra en tiempo real — Educación Cívica</p>
+  <div class="card">
+    <p><strong>Alumnos:</strong> entrá con el código del profe.</p>
+    <p><a class="btn" href="join.html">Unirme al juego</a></p>
+  </div>
+  <div class="card">
+    <p><strong>Profesor / proyector:</strong></p>
+    <p><a class="btn btn-secondary" href="proyector.html">Abrir mapa y controles</a></p>
+  </div>
+  <p class="note">Versión multijugador (v2) usa Supabase. Configurá <code>js/config.js</code> antes de jugar.</p>
+  <p class="note"><a href="admin.html">v1 legacy</a> (solo facilitador local)</p>
 </div>
-<script src="game-core.js"></script>
-<script>
-const G = CivicaGame;
-const app = document.getElementById("app");
-
-function barClass(v) {
-  if (v <= 0) return "danger";
-  if (v < 25) return "warn";
-  return "";
-}
-
-function renderMeters(country, key) {
-  const p = G.getContent()?.paises?.[key];
-  const cls = key === "valmira" ? "country-valmira" : "country-cerro";
-  const tag = key === "valmira" ? "tag-valmira" : "tag-cerro";
-  let html = `<div class="card ${cls}"><span class="tag ${tag}">${p?.nombreCorto || key}</span>`;
-  html += `<p class="note">${p?.nombreCompleto || ""} · ${p?.regimen || ""}</p>`;
-  if (country.collapsed) html += `<p class="error">Colapso — indicador en 0</p>`;
-  html += `<p class="score">Puntaje: ${G.scoreCountry(country)}</p>`;
-  for (const m of G.METERS) {
-    const v = country.meters[m];
-    html += `<div class="meter"><label><span>${G.METER_LABELS[m]}</span><span>${v}</span></label>`;
-    html += `<div class="bar ${barClass(v)}"><span style="width:${v}%"></span></div></div>`;
-  }
-  const h = G.getState().lastHeadlines[key];
-  if (h) html += `<p class="headline">${h}</p>`;
-  html += `</div>`;
-  return html;
-}
-
-function render() {
-  const state = G.getState();
-  const content = G.getContent();
-  if (!content) {
-    app.innerHTML = "<p>No se cargó contenido.json. Abrí con un servidor local (ver README).</p>";
-    return;
-  }
-
-  let html = `<h1>Cordillera del Sur</h1><p class="lead">Simulación educativa — Parlamentarismo vs Presidencialismo</p>`;
-
-  if (state.phase === "lobby") {
-    html += `<div class="card"><p>Esperando que el facilitador inicie la partida desde <strong>admin.html</strong>.</p></div>`;
-  } else if (state.phase === "playing" || state.phase === "finished") {
-    const crisis = G.getCrisis(state.crisisIndex) || G.getCrisis(content.crisis.length - 1);
-    if (state.phase === "playing" && crisis) {
-      html += `<div class="crisis-banner"><p>Crisis ${state.crisisIndex + 1} de ${content.crisis.length}</p>`;
-      html += `<h2>${crisis.titulo}</h2><p>${crisis.lead}</p></div>`;
-      html += `<p class="timer" id="publicTimer">—</p>`;
-    } else if (state.phase === "finished" && !state.winnerRevealed) {
-      html += `<div class="card"><p>Crisis terminadas. El facilitador revelará al ganador.</p></div>`;
-    }
-    html += `<div class="grid2">${renderMeters(state.valmira, "valmira")}${renderMeters(state.cerroAzul, "cerroAzul")}</div>`;
-  } else if (state.phase === "winner") {
-    const w = state.winner;
-    html += `<div class="winner-box"><h2>Gana ${G.winnerLabel(w?.result)}</h2><p>${w?.reason || ""}</p>`;
-    html += `<p class="note">Ganar la simulación no significa que un régimen sea mejor en la vida real; muestra quién manejó mejor la crisis con esas reglas.</p></div>`;
-    html += `<div class="grid2">${renderMeters(state.valmira, "valmira")}${renderMeters(state.cerroAzul, "cerroAzul")}</div>`;
-  } else if (state.phase === "debrief") {
-    html += `<div class="card"><h2>Ideas para el colegio</h2><ol>`;
-    for (const idea of state.ideasColegio) html += `<li>${idea || "—"}</li>`;
-    html += `</ol></div>`;
-    html += `<div class="grid2">${renderMeters(state.valmira, "valmira")}${renderMeters(state.cerroAzul, "cerroAzul")}</div>`;
-  }
-
-  app.innerHTML = html;
-}
-
-async function boot() {
-  const ok = await G.initContent("contenido.json");
-  if (!ok) {
-    app.innerHTML = "<p>Colocá <code>contenido.json</code> junto a este archivo y usá: <code>python3 -m http.server</code></p>";
-    return;
-  }
-  render();
-  window.addEventListener("civica-state", render);
-  window.addEventListener("storage", (e) => { if (e.key === G.STORAGE_KEY) render(); });
-}
-boot();
-</script>
 </body>
 </html>

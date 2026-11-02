@@ -1,50 +1,55 @@
-# Guía de exposición (~20 min)
+# Guía de exposición (~25–30 min)
 
 Proyecto Educación Cívica — CTP Mercedes Norte. Integrantes: Derek Quintero y Raquel Solano Vega.
 
-## Antes de clase
+## Setup (una vez)
 
-### En línea (recomendado)
+1. Supabase: [`supabase/SUPABASE_SETUP.md`](supabase/SUPABASE_SETUP.md) + `js/config.js`
+2. Canva: https://canva.link/dpw9vvm1g5k921v
 
-1. Proyector: https://drake241.github.io/educacion-civica-guerra/
-2. Facilitador (misma laptop, otra pestaña): https://drake241.github.io/educacion-civica-guerra/admin.html — contraseña **4125**
-3. Presentación Canva: https://canva.link/dpw9vvm1g5k921v
+## URLs en clase
 
-Repositorio: https://github.com/drake241/educacion-civica-guerra
+| Rol | URL |
+|-----|-----|
+| Proyector | https://drake241.github.io/educacion-civica-guerra/proyector.html (pin **4125**) |
+| Alumnos | https://drake241.github.io/educacion-civica-guerra/join.html?room=**CÓDIGO** |
 
-### Sin internet (respaldo)
+En proyector: **Nueva sala** → copiá el enlace con código → QR o WhatsApp al curso.
 
-```bash
-cd Educacion_Civica_Sistemas_Gobierno && python3 -m http.server 8080
-```
+## Flujo v2 (tiempo real)
 
-## División (2 min)
+| Paso | Proyector | Alumnos |
+|------|-----------|---------|
+| 1 | Entrar pin → **Nueva sala** → mostrar código | Entrar código, nombre, **elegir país** |
+| 2 | **Iniciar guerra** | Ven intro; rol aleatorio en pantalla |
+| 3 | **Abrir discusión** (5 rondas) | Leen situación y opciones (sin votar) |
+| 4 | **Abrir votación** | Valmira: votan opción. Cerro: Presidente propone; asambleístas sí/no |
+| 5 | **Cerrar voto y revelar** | Ven conteo en celular |
+| 6 | **Aplicar consecuencias** | Ven titular en celular + medidores |
+| 7 | **Siguiente ronda** (hasta 5) | Repiten |
+| 8 | **Calcular final** | Paz, victoria, colapso o empate |
 
-- **Valmira** (~15): Primer ministro, Presidente de la Cámara, diputados (1 persona = 1 voto).
-- **Cerro Azul** (~15): Presidente, resto Asamblea Legislativa.
+Rondas: frontera → hambruna → sanciones → tregua → desenlace.
 
-Frase clave: *Valmira gobierna como parlamento (España, Alemania, UK); Cerro Azul como presidencialismo tipo Costa Rica.*
+## Roles (automáticos)
 
-## Flujo
+- **Valmira:** Primer ministro o diputado/a (parlamento, 1 voto c/u).
+- **Cerro Azul:** Presidente (propone) o asambleísta (sí/no).
 
-| Min | Acción |
-|-----|--------|
-| 0–3 | Canva + intro. En admin: **Iniciar partida**. |
-| 3–5 | Asignar roles en cada rincón. |
-| 5–17 | 3 crisis: leer titular en proyector → timer 90s debate → 30s voto → registrar en admin → **Confirmar crisis**. |
-| 17–19 | **Revelar ganador** en admin. Debrief oral: ¿dónde costó más acordar? |
-| 19–20 | Anotar **3 ideas** para el colegio en admin; mini encuesta (manos alzadas). |
+## Mapa en proyector
 
-## Registro en admin
+Iconos cuando bajan medidores: **Hambruna**, **Aranceles**, **Protestas**, **Inestabilidad**. Feed de eventos entre países.
 
-**Valmira:** opción + votos a favor/en contra. Si falla, 2.º intento. Marcar crisis de confianza si hubo dos fallos.
+## Debrief
 
-**Cerro Azul:** opción del presidente + asamblea. Si pierde, segunda propuesta (penalización automática).
+- ¿Dónde costó más acordar, Valmira o Cerro Azul?
+- ¿Ver votos al final ayudó a entender parlamento vs presidencia?
+- 3 ideas para el Gobierno Estudiantil / Directiva.
 
-## Evidencias
+## v1 legacy
 
-Captura del proyector (ganador + medidores) y lista de 3 ideas.
+Si falla WiFi: [`admin.html`](admin.html) local (facilitador anota votos a mano).
 
-## Nota
+## Nota pedagógica
 
-Ganar la simulación no valida un régimen sobre otro; ilustra decisiones bajo presión.
+Ganar la simulación no significa que un régimen sea “mejor”; muestra decisiones bajo presión.

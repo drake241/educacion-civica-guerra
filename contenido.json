@@ -1,5 +1,6 @@
 {
   "region": "Cordillera del Sur",
+  "version": 2,
   "paises": {
     "valmira": {
       "id": "valmira",
@@ -24,17 +25,23 @@
     "estabilidad": 50,
     "apoyo": 50
   },
-  "crisis": [
+  "introGuerra": {
+    "titulo": "Comienza la guerra",
+    "lead": "En la Cordillera del Sur estallan hostilidades entre Valmira y Cerro Azul. Cada gobierno debe decidir bajo presión: parlamento o presidencia, pero la región arde."
+  },
+  "rondas": [
     {
       "id": "frontera",
+      "tipo": "decision",
       "titulo": "Frontera en alerta",
-      "lead": "El vecino moviliza tropas en la Cordillera del Sur. Deben decidir ya.",
+      "lead": "Tropas en la frontera. El tiempo de deliberar se acaba.",
       "opciones": [
         {
           "id": "diplomacia",
           "etiqueta": "A) Diplomacia y mesa de diálogo",
           "efectos": { "alimentos": 0, "comercio": 5, "estabilidad": -5, "apoyo": 10 },
-          "headline": "La paciencia calma el frente, pero el reloj corre."
+          "headline": "La paciencia calma el frente, pero el reloj corre.",
+          "peacePath": true
         },
         {
           "id": "movilizar",
@@ -44,63 +51,155 @@
         },
         {
           "id": "bloqueo",
-          "etiqueta": "C) Bloqueo comercial al vecino",
+          "etiqueta": "C) Bloqueo comercial",
           "efectos": { "alimentos": -5, "comercio": -15, "estabilidad": 5, "apoyo": -5 },
           "headline": "Aranceles de represalia: exportaciones paralizadas.",
-          "requiereComercioMin": 15
+          "requiereComercioMin": 15,
+          "crossEvent": "Cerro Azul / Valmira siente el bloqueo en su comercio regional."
         }
       ]
     },
     {
       "id": "hambruna",
+      "tipo": "decision",
       "titulo": "Hambruna incipiente",
-      "lead": "Las reservas de granos bajan. El invierno agrava la crisis.",
+      "lead": "Las reservas de granos bajan. Invierno duro.",
       "opciones": [
         {
           "id": "racionar",
           "etiqueta": "A) Racionar alimentos",
           "efectos": { "alimentos": 10, "comercio": 0, "estabilidad": 5, "apoyo": -15 },
-          "headline": "Hay comida, pero la gente protesta en las plazas."
+          "headline": "Hay comida, pero protestas en las plazas."
         },
         {
           "id": "importar",
-          "etiqueta": "B) Importar alimentos de urgencia",
+          "etiqueta": "B) Importar alimentos",
           "efectos": { "alimentos": 20, "comercio": -12, "estabilidad": 0, "apoyo": 5 },
-          "headline": "Llega trigo extranjero; la cuenta comercial duele.",
+          "headline": "Llega trigo extranjero; la cuenta duele.",
           "requiereComercioMin": 10
         },
         {
           "id": "expropiar",
-          "etiqueta": "C) Requisar graneros (medida extrema)",
+          "etiqueta": "C) Requisar graneros",
           "efectos": { "alimentos": 25, "comercio": -8, "estabilidad": -10, "apoyo": -20 },
-          "headline": "Pan en la mesa hoy; desconfianza mañana."
+          "headline": "Pan hoy; desconfianza mañana."
         }
       ]
     },
     {
       "id": "sanciones",
+      "tipo": "decision",
       "titulo": "Sanciones internacionales",
-      "lead": "Potencias externas congelan acuerdos comerciales por el conflicto regional.",
+      "lead": "Potencias externas congelan acuerdos comerciales.",
       "opciones": [
         {
           "id": "acuerdos",
-          "etiqueta": "A) Negociar acuerdos de emergencia",
+          "etiqueta": "A) Negociar acuerdos",
           "efectos": { "alimentos": 5, "comercio": 12, "estabilidad": -5, "apoyo": 5 },
-          "headline": "Lentamente vuelven los barcos; el orgullo cede."
+          "headline": "Vuelven los barcos; el orgullo cede.",
+          "peacePath": true
         },
         {
           "id": "alternos",
-          "etiqueta": "B) Buscar mercados alternos",
+          "etiqueta": "B) Mercados alternos",
           "efectos": { "alimentos": 0, "comercio": -5, "estabilidad": 0, "apoyo": 0 },
-          "headline": "Nuevos socios, precios impredecibles."
+          "headline": "Precios impredecibles."
         },
         {
           "id": "aranceles",
           "etiqueta": "C) Retorsión arancelaria",
           "efectos": { "alimentos": -10, "comercio": -18, "estabilidad": 8, "apoyo": -8 },
-          "headline": "Guerra comercial: aranceles suben, hambruna acecha."
+          "headline": "Guerra comercial; hambruna acecha.",
+          "crossEvent": "El vecino responde con aranceles recíprocos."
+        }
+      ]
+    },
+    {
+      "id": "tregua",
+      "tipo": "decision",
+      "titulo": "Propuesta de tregua",
+      "lead": "Organismos internacionales ofrecen mesa de paz temporal.",
+      "opciones": [
+        {
+          "id": "aceptar_tregua",
+          "etiqueta": "A) Aceptar tregua y negociar",
+          "efectos": { "alimentos": 5, "comercio": 8, "estabilidad": -8, "apoyo": 12 },
+          "headline": "Silencio en el frente; esperanza cautelosa.",
+          "peacePath": true
+        },
+        {
+          "id": "tregua_condicional",
+          "etiqueta": "B) Tregua con condiciones duras",
+          "efectos": { "alimentos": 0, "comercio": 3, "estabilidad": 5, "apoyo": -3 },
+          "headline": "Paz frágil bajo presión."
+        },
+        {
+          "id": "rechazar_tregua",
+          "etiqueta": "C) Rechazar y seguir la guerra",
+          "efectos": { "alimentos": -8, "comercio": -10, "estabilidad": 12, "apoyo": -10 },
+          "headline": "La guerra continúa; el cansancio crece."
+        }
+      ]
+    },
+    {
+      "id": "desenlace",
+      "tipo": "decision",
+      "titulo": "Última decisión",
+      "lead": "Una elección final definirá el futuro de la Cordillera del Sur.",
+      "opciones": [
+        {
+          "id": "tratado_paz",
+          "etiqueta": "A) Firmar tratado de paz",
+          "efectos": { "alimentos": 8, "comercio": 10, "estabilidad": -5, "apoyo": 15 },
+          "headline": "Plumas en lugar de balas — por ahora.",
+          "peacePath": true
+        },
+        {
+          "id": "victoria_parcial",
+          "etiqueta": "B) Negociar desde la fuerza",
+          "efectos": { "alimentos": -5, "comercio": -5, "estabilidad": 10, "apoyo": -5 },
+          "headline": "Ventaja táctica, paz lejana."
+        },
+        {
+          "id": "ultimatum",
+          "etiqueta": "C) Ultimátum total",
+          "efectos": { "alimentos": -12, "comercio": -15, "estabilidad": 15, "apoyo": -15 },
+          "headline": "Apuesta extrema; el país tiembla."
         }
       ]
     }
-  ]
+  ],
+  "finales": {
+    "paz": {
+      "id": "paz",
+      "titulo": "Paz en la Cordillera",
+      "texto": "Valmira y Cerro Azul logran un equilibrio. No es perfecto, pero la guerra cede al diálogo."
+    },
+    "valmira": {
+      "id": "valmira",
+      "titulo": "Ventaja de Valmira",
+      "texto": "Valmira supera la crisis mejor que su vecino."
+    },
+    "cerroAzul": {
+      "id": "cerroAzul",
+      "titulo": "Ventaja de Cerro Azul",
+      "texto": "Cerro Azul resiste y gana la partida geopolítica."
+    },
+    "colapso_valmira": {
+      "id": "colapso_valmira",
+      "titulo": "Colapso de Valmira",
+      "texto": "Los indicadores de Valmira llegaron a cero; el gobierno cae."
+    },
+    "colapso_cerro": {
+      "id": "colapso_cerro",
+      "titulo": "Colapso de Cerro Azul",
+      "texto": "Cerro Azul no sostuvo la presión de la guerra."
+    },
+    "empate": {
+      "id": "empate",
+      "titulo": "Empate tenso",
+      "texto": "Ningún bando claramente vencedor; región inestable."
+    }
+  },
+  "crisis": []
 }

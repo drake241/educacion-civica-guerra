@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jugar — Valmira vs Cerro Azul</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap" id="app"><p>Cargando…</p></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/game-content.js"></script>
+<script src="js/supabase-api.js"></script>
+<script>
+const app = document.getElementById("app");
+const player = CivicaSession.loadPlayer();
+if (!player?.player_id) {
+  location.href = "join.html";
+}
+
+let room = null;
+let players = [];
+
+async function refresh() {
+  room = await CivicaSupabase.fetchRoom(player.room_id);
+  players = await CivicaSupabase.fetchPlayers(player.room_id);
+  render();
+}
+
+function render() {
+  const content = CivicaContent.get();
+  const sub = room.subphase;
+  const round = CivicaContent.getRound(room.round_index);
+  const pais = content?.paises?.[player.country];
+  const meters = player.country === "valmira" ? room.valmira_meters : room.cerro_meters;
+
+  let html = `<p><span class="tag tag-${player.country === "valmira" ? "valmira" : "cerro"}">${pais?.nombreCorto}</span></p>`;
+  html += `<p class="lead">Rol: <strong>${roleLabel(player.role, player.country)}</strong></p>`;
+
+  if (sub === "lobby") {
+    html += `<div class="card"><p>Esperá a que el profesor inicie la guerra…</p></div>`;
+  } else if (sub === "intro") {
+    html += `<div class="card"><h2>${content.introGuerra.titulo}</h2><p>${content.introGuerra.lead}</p></div>`;
+  } else if (sub === "discuss" && round) {
+    html += `<div class="card"><h2>${round.titulo}</h2><p>${round.lead}</p><p class="note">Discutí con tu país. La votación se abrirá pronto.</p><ul>`;
+    for (const o of round.opciones) html += `<li>${o.etiqueta}</li>`;
+    html += `</ul></div>`;
+  } else if (sub === "vote" && round) {
+    html += `<div class="card"><h2>Votación</h2><p>${round.titulo}</p><div id="voteUi"></div></div>`;
+  } else if (sub === "reveal") {
+    const rr = room.round_results?.[String(room.round_index)] ?? room.round_results?.[room.round_index];
+    html += `<div class="card"><h2>Resultados de la votación</h2>`;
+    if (rr) {
+      html += `<p>Valmira eligió: <strong>${rr.valmira_chosen ?? "—"}</strong></p>`;
+      html += `<p>Cerro Azul: <strong>${rr.cerro_chosen ?? "—"}</strong> (Asamblea sí ${rr.cerro_assembly?.yes ?? 0} / no ${rr.cerro_assembly?.no ?? 0})</p>`;
+      if (rr.valmira_option_votes) {
+        html += `<p>Votos diputados:</p><pre>${JSON.stringify(rr.valmira_option_votes, null, 0)}</pre>`;
+      }
+    } else html += `<p>El profesor publicará los resultados…</p>`;
+    html += `</div>`;
+  } else if (sub === "consequence") {
+    const h = player.country === "valmira" ? room.lastHeadlines?.valmira : null;
+    const log = room.event_log?.[room.event_log.length - 1];
+    const headline = log?.[player.country === "valmira" ? "valmira" : "cerro"] ?? "Consecuencias aplicadas.";
+    html += `<div class="card"><h2>Consecuencia</h2><p class="headline">${headline}</p></div>`;
+    html += renderMeters(meters);
+  } else if (sub === "ending" || room.phase === "finished") {
+    const finKey = room.ending;
+    const fin = (finKey && content.finales?.[finKey]) || CivicaContent.computeEnding(room);
+    html += `<div class="winner-box"><h2>${fin.titulo ?? fin.id}</h2><p>${fin.texto ?? ""}</p></div>`;
+    html += renderMeters(meters);
+  } else {
+    html += `<div class="card"><p>Fase: ${sub}</p></div>`;
+  }
+
+  if (sub !== "consequence" && sub !== "ending" && room.phase === "playing") {
+    html += renderMeters(meters);
+  }
+
+  app.innerHTML = html;
+
+  if (sub === "vote" && round) buildVoteUi(round);
+}
+
+function renderMeters(m) {
+  if (!m) return "";
+  let s = `<div class="card"><h2>Tu país ahora</h2>`;
+  for (const k of ["alimentos", "comercio", "estabilidad", "apoyo"]) {
+    s += `<div class="meter"><label><span>${k}</span><span>${m[k]}</span></label><div class="bar"><span style="width:${m[k]}%"></span></div></div>`;
+  }
+  s += `</div>`;
+  return s;
+}
+
+function buildVoteUi(round) {
+  const el = document.getElementById("voteUi");
+  if (!el) return;
+
+  if (player.country === "valmira") {
+    el.innerHTML = `<p class="note">Votá una opción (1 diputado = 1 voto).</p>` +
+      round.opciones.map((o) => `<button class="btn btn-secondary vote-opt" data-id="${o.id}">${o.etiqueta}</button>`).join(" ");
+    el.querySelectorAll(".vote-opt").forEach((btn) => {
+      btn.onclick = async () => {
+        await CivicaSupabase.submitVote(player.player_id, "option", btn.dataset.id);
+        btn.textContent = "✓ " + btn.textContent;
+      };
+    });
+  } else if (player.role === "presidente") {
+    el.innerHTML = `<p class="note">Como Presidente, proponé:</p>` +
+      round.opciones.map((o) => `<button class="btn btn-secondary vote-opt" data-id="${o.id}">${o.etiqueta}</button>`).join(" ");
+    el.querySelectorAll(".vote-opt").forEach((btn) => {
+      btn.onclick = async () => {
+        await CivicaSupabase.submitVote(player.player_id, "option", btn.dataset.id);
+        btn.textContent = "✓ Propuesta enviada";
+      };
+    });
+  } else {
+    el.innerHTML = `<p>Votá si aprueba la propuesta del Presidente:</p>
+      <button class="btn" id="vYes">A favor</button>
+      <button class="btn btn-secondary" id="vNo">En contra</button>`;
+    document.getElementById("vYes").onclick = () => CivicaSupabase.submitVote(player.player_id, "yes");
+    document.getElementById("vNo").onclick = () => CivicaSupabase.submitVote(player.player_id, "no");
+  }
+}
+
+async function boot() {
+  try {
+    CivicaSupabase.init();
+    await CivicaContent.load();
+    await refresh();
+    CivicaSupabase.subscribeRoom(player.room_id, refresh);
+  } catch (e) {
+    app.innerHTML = `<p class="error">${e.message}. Configurá js/config.js (ver supabase/SUPABASE_SETUP.md).</p>`;
+  }
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,37 +1,50 @@
-# Juego: Valmira vs Cerro Azul
+# Valmira vs Cerro Azul (v2 multijugador)
 
-Simulación de crisis bélica para comparar **parlamentarismo** y **presidencialismo** (Educación Cívica, 10.°).
+Juego en **tiempo real** para Educación Cívica: cada alumno entra con celular, elige país, recibe **rol aleatorio**, vota por rondas de guerra; el **proyector** muestra mapa de dos países, medidores e iconos (hambruna, aranceles…).
 
+## En línea (GitHub Pages)
 
-## Juego en línea (GitHub Pages)
+- **Inicio:** https://drake241.github.io/educacion-civica-guerra/
+- **Alumnos:** https://drake241.github.io/educacion-civica-guerra/join.html
+- **Proyector:** https://drake241.github.io/educacion-civica-guerra/proyector.html (pin **4125**)
 
-- **Proyector:** https://drake241.github.io/educacion-civica-guerra/
-- **Panel facilitador:** https://drake241.github.io/educacion-civica-guerra/admin.html
+Repo: https://github.com/drake241/educacion-civica-guerra
 
-Funciona en celulares y laptops con internet. El estado del juego se guarda en el navegador (`localStorage`); admin y proyector deben ser pestañas del **mismo navegador** en la misma PC para sincronizar en vivo.
+## Antes del primer uso (obligatorio)
 
-### Desarrollo local
+1. Crear proyecto **Supabase** (gratis) y ejecutar SQL: [`supabase/SUPABASE_SETUP.md`](supabase/SUPABASE_SETUP.md)
+2. Copiar `js/config.example.js` → `js/config.js` con URL y anon key
+3. Subir `config.js` al repo **o** pegar credenciales en GitHub Pages (la anon key es pública con RLS)
 
-Los navegadores bloquean `fetch` a JSON en `file://`. Usá un servidor local:
+Sin Supabase, join/proyector mostrarán error de configuración.
 
-```bash
-cd Educacion_Civica_Sistemas_Gobierno
-python3 -m http.server 8080
-```
+## Flujo en clase
 
-- **Proyector:** http://localhost:8080/index.html
-- **Facilitador:** http://localhost:8080/admin.html (contraseña de aula en el panel; no es seguridad real)
+1. Proyector: `proyector.html` → pin → **Nueva sala** (código) → compartir enlace/QR a alumnos
+2. Alumnos: `join.html` → código → nombre → país
+3. **Iniciar guerra** → intro → discusión → votación → revelar → consecuencia → siguiente ronda (×5)
+4. **Calcular final** (paz, victoria, colapso, empate)
 
-Misma carpeta en USB: mismo comando desde esa carpeta.
+Guion detallado: [`guia-exposicion.md`](guia-exposicion.md)
 
-## Archivos
+## Archivos v2
 
 | Archivo | Uso |
 |---------|-----|
-| `contenido.json` | Crisis, opciones, efectos |
-| `game-core.js` | Estado compartido (`localStorage`) |
-| `index.html` | Vista pública |
-| `admin.html` | Panel facilitador |
-| `guia-exposicion.md` | Guion 20 min |
+| `join.html` / `jugar.html` | Jugador |
+| `proyector.html` | Mapa + controles profe |
+| `js/supabase-api.js` | RPC y Realtime |
+| `js/game-content.js` | Rondas y finales |
+| `contenido.json` | Guion de la guerra |
+| `supabase/migrations/*.sql` | Base de datos |
 
-Ver `guia-exposicion.md` para el guion completo.
+## v1 legacy
+
+[`admin.html`](admin.html) + `game-core.js`: facilitador manual, sin multijugador.
+
+## Desarrollo local
+
+```bash
+python3 -m http.server 8080
+# http://localhost:8080/join.html
+```

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unirse — Valmira vs Cerro Azul</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <h1>Entrar a la guerra</h1>
+  <p class="lead">Elegí tu país. Te asignaremos un rol al azar.</p>
+  <div class="card">
+    <label class="field">Código de sala</label>
+    <input id="code" maxlength="6" placeholder="Ej. AB12C" autocomplete="off">
+    <label class="field">Tu nombre</label>
+    <input id="nick" maxlength="24" placeholder="Nombre o apodo">
+    <p class="field">País</p>
+    <div class="btn-row">
+      <button type="button" class="btn country-valmira" id="pickValmira">Valmira (parlamento)</button>
+      <button type="button" class="btn country-cerro" id="pickCerro">Cerro Azul (presidencia)</button>
+    </div>
+    <p class="error hidden" id="err"></p>
+    <button class="btn" id="joinBtn" disabled>Unirme</button>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-api.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+if (params.get("room")) document.getElementById("code").value = params.get("room");
+
+let country = null;
+document.getElementById("pickValmira").onclick = () => { country = "valmira"; document.getElementById("joinBtn").disabled = false; };
+document.getElementById("pickCerro").onclick = () => { country = "cerroAzul"; document.getElementById("joinBtn").disabled = false; };
+
+document.getElementById("joinBtn").onclick = async () => {
+  const err = document.getElementById("err");
+  err.classList.add("hidden");
+  try {
+    CivicaSupabase.init();
+    const data = await CivicaSupabase.joinRoom(
+      document.getElementById("code").value,
+      document.getElementById("nick").value || "Jugador",
+      country
+    );
+    CivicaSession.savePlayer(data);
+    location.href = "jugar.html";
+  } catch (e) {
+    err.textContent = e.message || "No se pudo entrar";
+    err.classList.remove("hidden");
+  }
+};
+</script>
+</body>
+</html>

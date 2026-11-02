@@ -60,6 +60,25 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
 }
 .tag-valmira { background: var(--valmira); }
 .tag-cerro { background: var(--cerro); }
+.map-grid {
+  display: grid;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+@media (min-width: 800px) { .map-grid { grid-template-columns: 1fr 1fr; } }
+.map-country { padding: 1rem; border-radius: 12px; background: var(--card); box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+.status-pill {
+  display: inline-block;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  margin: 0.15rem;
+}
+.status-icons { min-height: 2rem; margin: 0.5rem 0; }
+.country-valmira.btn, button.country-valmira { background: var(--valmira); }
+.country-cerro.btn, button.country-cerro { background: var(--cerro); }
 .headline { font-style: italic; color: var(--muted); margin-top: 0.5rem; }
 .btn {
   border: none;
