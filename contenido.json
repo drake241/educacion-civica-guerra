@@ -1,0 +1,106 @@
+{
+  "region": "Cordillera del Sur",
+  "paises": {
+    "valmira": {
+      "id": "valmira",
+      "nombreCorto": "Valmira",
+      "nombreCompleto": "República de Valmira",
+      "regimen": "parlamentario",
+      "inspiracion": "España, Alemania, Reino Unido",
+      "color": "#2d6a4f"
+    },
+    "cerroAzul": {
+      "id": "cerroAzul",
+      "nombreCorto": "Cerro Azul",
+      "nombreCompleto": "República de Cerro Azul",
+      "regimen": "presidencialista",
+      "inspiracion": "Costa Rica",
+      "color": "#1d3557"
+    }
+  },
+  "medidoresIniciales": {
+    "alimentos": 55,
+    "comercio": 55,
+    "estabilidad": 50,
+    "apoyo": 50
+  },
+  "crisis": [
+    {
+      "id": "frontera",
+      "titulo": "Frontera en alerta",
+      "lead": "El vecino moviliza tropas en la Cordillera del Sur. Deben decidir ya.",
+      "opciones": [
+        {
+          "id": "diplomacia",
+          "etiqueta": "A) Diplomacia y mesa de diálogo",
+          "efectos": { "alimentos": 0, "comercio": 5, "estabilidad": -5, "apoyo": 10 },
+          "headline": "La paciencia calma el frente, pero el reloj corre."
+        },
+        {
+          "id": "movilizar",
+          "etiqueta": "B) Movilizar reservas",
+          "efectos": { "alimentos": -5, "comercio": -5, "estabilidad": 15, "apoyo": -5 },
+          "headline": "El ejército responde; los mercados se inquietan."
+        },
+        {
+          "id": "bloqueo",
+          "etiqueta": "C) Bloqueo comercial al vecino",
+          "efectos": { "alimentos": -5, "comercio": -15, "estabilidad": 5, "apoyo": -5 },
+          "headline": "Aranceles de represalia: exportaciones paralizadas.",
+          "requiereComercioMin": 15
+        }
+      ]
+    },
+    {
+      "id": "hambruna",
+      "titulo": "Hambruna incipiente",
+      "lead": "Las reservas de granos bajan. El invierno agrava la crisis.",
+      "opciones": [
+        {
+          "id": "racionar",
+          "etiqueta": "A) Racionar alimentos",
+          "efectos": { "alimentos": 10, "comercio": 0, "estabilidad": 5, "apoyo": -15 },
+          "headline": "Hay comida, pero la gente protesta en las plazas."
+        },
+        {
+          "id": "importar",
+          "etiqueta": "B) Importar alimentos de urgencia",
+          "efectos": { "alimentos": 20, "comercio": -12, "estabilidad": 0, "apoyo": 5 },
+          "headline": "Llega trigo extranjero; la cuenta comercial duele.",
+          "requiereComercioMin": 10
+        },
+        {
+          "id": "expropiar",
+          "etiqueta": "C) Requisar graneros (medida extrema)",
+          "efectos": { "alimentos": 25, "comercio": -8, "estabilidad": -10, "apoyo": -20 },
+          "headline": "Pan en la mesa hoy; desconfianza mañana."
+        }
+      ]
+    },
+    {
+      "id": "sanciones",
+      "titulo": "Sanciones internacionales",
+      "lead": "Potencias externas congelan acuerdos comerciales por el conflicto regional.",
+      "opciones": [
+        {
+          "id": "acuerdos",
+          "etiqueta": "A) Negociar acuerdos de emergencia",
+          "efectos": { "alimentos": 5, "comercio": 12, "estabilidad": -5, "apoyo": 5 },
+          "headline": "Lentamente vuelven los barcos; el orgullo cede."
+        },
+        {
+          "id": "alternos",
+          "etiqueta": "B) Buscar mercados alternos",
+          "efectos": { "alimentos": 0, "comercio": -5, "estabilidad": 0, "apoyo": 0 },
+          "headline": "Nuevos socios, precios impredecibles."
+        },
+        {
+          "id": "aranceles",
+          "etiqueta": "C) Retorsión arancelaria",
+          "efectos": { "alimentos": -10, "comercio": -18, "estabilidad": 8, "apoyo": -8 },
+          "headline": "Guerra comercial: aranceles suben, hambruna acecha."
+        }
+      ]
+    }
+  ]
+}

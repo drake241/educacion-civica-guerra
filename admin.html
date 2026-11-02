@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel facilitador — Valmira vs Cerro Azul</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="loginView" class="wrap login-box hidden">
+  <div class="card">
+    <h1>Panel facilitador</h1>
+    <p class="lead">Solo Derek/Raquel. Vista pública en index.html.</p>
+    <label class="field">Contraseña</label>
+    <input type="password" id="passInput" autocomplete="off">
+    <p class="error hidden" id="loginErr">Contraseña incorrecta</p>
+    <div class="btn-row"><button class="btn" id="loginBtn">Entrar</button></div>
+  </div>
+</div>
+<div id="panelView" class="wrap hidden">
+  <h1>Panel de control</h1>
+  <p class="lead">Registrá votos de Valmira (parlamento) y Cerro Azul (presidencia). El proyector se actualiza solo.</p>
+  <div class="btn-row">
+    <button class="btn" id="startBtn">Iniciar partida</button>
+    <button class="btn btn-secondary" id="revealBtn">Revelar ganador</button>
+    <button class="btn btn-danger" id="resetBtn">Reiniciar</button>
+    <button class="btn btn-secondary" id="logoutBtn">Salir</button>
+    <a class="btn btn-secondary" href="index.html" target="_blank">Abrir proyector</a>
+  </div>
+  <div class="card">
+    <p>Fase: <strong id="phaseLabel">—</strong> · Crisis: <strong id="crisisLabel">—</strong></p>
+    <div class="btn-row">
+      <button class="btn btn-secondary" id="t90">Timer 90s debate</button>
+      <button class="btn btn-secondary" id="t30">Timer 30s voto</button>
+      <span class="timer" id="adminTimer">—</span>
+    </div>
+  </div>
+  <div class="grid2" id="metersPanel"></div>
+  <div class="crisis-banner" id="crisisBanner"></div>
+  <p class="error hidden" id="formErr"></p>
+  <div class="grid2">
+    <div class="card country-valmira">
+      <h2>Valmira — Parlamento</h2>
+      <p class="note">Cada diputado vota. Mayoría simple: sí &gt; no.</p>
+      <label class="field">Propuesta (1.er intento)</label>
+      <select id="vOpt1"></select>
+      <div class="form-row">
+        <div><label class="field">Votos a favor</label><input type="number" id="vYes1" min="0" value="0"></div>
+        <div><label class="field">Votos en contra</label><input type="number" id="vNo1" min="0" value="0"></div>
+      </div>
+      <label class="field">2.do intento (si falló el primero)</label>
+      <select id="vOpt2"><option value="">— No usado —</option></select>
+      <div class="form-row">
+        <div><label class="field">Sí (2.do)</label><input type="number" id="vYes2" min="0" value="0"></div>
+        <div><label class="field">No (2.do)</label><input type="number" id="vNo2" min="0" value="0"></div>
+      </div>
+      <label><input type="checkbox" id="vConfianza"> Crisis de confianza (2 fallos → PM nuevo, penalización extra)</label>
+    </div>
+    <div class="card country-cerro">
+      <h2>Cerro Azul — Presidencia</h2>
+      <p class="note">Presidente propone; Asamblea vota sí/no.</p>
+      <label class="field">Propuesta del Presidente</label>
+      <select id="cOpt1"></select>
+      <div class="form-row">
+        <div><label class="field">Asamblea a favor</label><input type="number" id="cYes1" min="0" value="0"></div>
+        <div><label class="field">Asamblea en contra</label><input type="number" id="cNo1" min="0" value="0"></div>
+      </div>
+      <label class="field">Nueva propuesta si perdió en Asamblea</label>
+      <select id="cOpt2"><option value="">— No usado —</option></select>
+      <div class="form-row">
+        <div><label class="field">Sí (2.do)</label><input type="number" id="cYes2" min="0" value="0"></div>
+        <div><label class="field">No (2.do)</label><input type="number" id="cNo2" min="0" value="0"></div>
+      </div>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn" id="confirmBtn">Confirmar crisis y aplicar consecuencias</button></div>
+  <div class="card">
+    <h2>Historial</h2>
+    <ul id="historyList"></ul>
+  </div>
+  <div class="card">
+    <h2>Cierre — 3 ideas para el colegio</h2>
+    <label class="field">Idea 1</label><input id="idea1">
+    <label class="field">Idea 2</label><input id="idea2">
+    <label class="field">Idea 3</label><input id="idea3">
+    <button class="btn" id="saveIdeas">Guardar ideas (proyector)</button>
+  </div>
+  <div class="card">
+    <h2>Mini encuesta (conteo de manos)</h2>
+    <div class="form-row">
+      <div><label class="field">Entienden diferencia pres./parl.</label><input type="number" id="eq1" min="0" value="0"></div>
+      <div><label class="field">Diálogo útil en Directiva</label><input type="number" id="eq2" min="0" value="0"></div>
+      <div><label class="field">Alianzas ayudan en equipo</label><input type="number" id="eq3" min="0" value="0"></div>
+      <div><label class="field">Participación total (manos)</label><input type="number" id="ehands" min="0" value="30"></div>
+    </div>
+    <button class="btn btn-secondary" id="saveEnc">Guardar encuesta</button>
+  </div>
+</div>
+<script src="game-core.js"></script>
+<script>
+const G = CivicaGame;
+const loginView = document.getElementById("loginView");
+const panelView = document.getElementById("panelView");
+let timerId = null;
+let timerSec = 0;
+
+function showLogin() {
+  loginView.classList.remove("hidden");
+  panelView.classList.add("hidden");
+}
+function showPanel() {
+  loginView.classList.add("hidden");
+  panelView.classList.remove("hidden");
+}
+
+function fillOptions(select, crisis, blank) {
+  select.innerHTML = blank ? '<option value="">— No usado —</option>' : "";
+  if (!crisis) return;
+  for (const o of crisis.opciones) {
+    const opt = document.createElement("option");
+    opt.value = o.id;
+    opt.textContent = o.etiqueta;
+    select.appendChild(opt);
+  }
+}
+
+function resolveValmira() {
+  const y1 = +document.getElementById("vYes1").value;
+  const n1 = +document.getElementById("vNo1").value;
+  const opt1 = document.getElementById("vOpt1").value;
+  if (y1 > n1 && opt1) return { approved: true, optionId: opt1, extraPenalty: 0 };
+  const opt2 = document.getElementById("vOpt2").value;
+  const y2 = +document.getElementById("vYes2").value;
+  const n2 = +document.getElementById("vNo2").value;
+  if (opt2 && y2 > n2) {
+    const extra = document.getElementById("vConfianza").checked ? 1 : 0;
+    return { approved: true, optionId: opt2, extraPenalty: extra };
+  }
+  return { approved: false, optionId: null, extraPenalty: document.getElementById("vConfianza").checked ? 1 : 0 };
+}
+
+function resolveCerro() {
+  const y1 = +document.getElementById("cYes1").value;
+  const n1 = +document.getElementById("cNo1").value;
+  const opt1 = document.getElementById("cOpt1").value;
+  if (y1 > n1 && opt1) return { approved: true, optionId: opt1, extraPenalty: 0 };
+  const opt2 = document.getElementById("cOpt2").value;
+  const y2 = +document.getElementById("cYes2").value;
+  const n2 = +document.getElementById("cNo2").value;
+  if (opt2 && y2 > n2) return { approved: true, optionId: opt2, extraPenalty: 1 };
+  return { approved: false, optionId: null, extraPenalty: 0 };
+}
+
+function renderMetersAdmin() {
+  const s = G.getState();
+  const el = document.getElementById("metersPanel");
+  el.innerHTML = ["valmira", "cerroAzul"].map((key) => {
+    const c = s[key];
+    const p = G.getContent()?.paises?.[key];
+    let inner = `<div class="card ${key === "valmira" ? "country-valmira" : "country-cerro"}"><h2>${p?.nombreCorto}</h2>`;
+    inner += `<p class="score">Puntaje ${G.scoreCountry(c)} · Penaliz. ${c.penalizacionesRegimen}</p>`;
+    if (c.collapsed) inner += `<p class="error">Colapsado</p>`;
+    for (const m of G.METERS) {
+      const v = c.meters[m];
+      inner += `<div class="meter"><label><span>${G.METER_LABELS[m]}</span><span>${v}</span></label>`;
+      inner += `<div class="bar"><span style="width:${v}%"></span></div></div>`;
+    }
+    inner += `</div>`;
+    return inner;
+  }).join("");
+}
+
+function renderPanel() {
+  const s = G.getState();
+  const content = G.getContent();
+  document.getElementById("phaseLabel").textContent = s.phase;
+  const crisis = G.getCrisis(s.crisisIndex);
+  document.getElementById("crisisLabel").textContent = s.phase === "playing" && crisis
+    ? `${s.crisisIndex + 1}: ${crisis.titulo}` : (s.phase === "finished" ? "Fin" : "—");
+  const banner = document.getElementById("crisisBanner");
+  if (crisis && s.phase === "playing") {
+    banner.innerHTML = `<h2>${crisis.titulo}</h2><p>${crisis.lead}</p>`;
+    fillOptions(document.getElementById("vOpt1"), crisis, false);
+    fillOptions(document.getElementById("vOpt2"), crisis, true);
+    fillOptions(document.getElementById("cOpt1"), crisis, false);
+    fillOptions(document.getElementById("cOpt2"), crisis, true);
+  } else banner.innerHTML = s.winnerRevealed && s.winner
+    ? `<p>Ganador: ${G.winnerLabel(s.winner.result)} — ${s.winner.reason}</p>` : "<p>Sin crisis activa</p>";
+  renderMetersAdmin();
+  const hist = document.getElementById("historyList");
+  hist.innerHTML = s.history.slice().reverse().map((h) => {
+    const lines = h.entries.map((e) => `${e.paisKey}: ${e.approved ? e.headline : "Rechazado"}`).join("; ");
+    return `<li><strong>${h.titulo}</strong> — ${lines}</li>`;
+  }).join("") || "<li>—</li>";
+  document.getElementById("confirmBtn").disabled = s.phase !== "playing";
+}
+
+function startTimer(sec) {
+  clearInterval(timerId);
+  timerSec = sec;
+  const el = document.getElementById("adminTimer");
+  el.textContent = timerSec;
+  timerId = setInterval(() => {
+    timerSec -= 1;
+    el.textContent = timerSec;
+    if (timerSec <= 0) clearInterval(timerId);
+  }, 1000);
+}
+
+document.getElementById("loginBtn").onclick = () => {
+  if (G.adminUnlock(document.getElementById("passInput").value)) {
+    document.getElementById("loginErr").classList.add("hidden");
+    showPanel();
+    renderPanel();
+  } else document.getElementById("loginErr").classList.remove("hidden");
+};
+document.getElementById("logoutBtn").onclick = () => { G.adminLock(); showLogin(); };
+document.getElementById("startBtn").onclick = () => { G.startGame(); renderPanel(); };
+document.getElementById("resetBtn").onclick = () => {
+  if (confirm("¿Reiniciar toda la partida?")) { G.resetGame(); renderPanel(); }
+};
+document.getElementById("revealBtn").onclick = () => { G.revealWinner(); renderPanel(); };
+document.getElementById("t90").onclick = () => startTimer(90);
+document.getElementById("t30").onclick = () => startTimer(30);
+document.getElementById("confirmBtn").onclick = () => {
+  const err = document.getElementById("formErr");
+  err.classList.add("hidden");
+  const v = resolveValmira();
+  const c = resolveCerro();
+  const res = G.confirmCrisis([
+    { paisId: "valmira", approved: v.approved, optionId: v.optionId, extraPenalty: v.extraPenalty },
+    { paisId: "cerroAzul", approved: c.approved, optionId: c.optionId, extraPenalty: c.extraPenalty },
+  ]);
+  if (!res.ok) {
+    err.textContent = res.error;
+    err.classList.remove("hidden");
+    return;
+  }
+  renderPanel();
+};
+document.getElementById("saveIdeas").onclick = () => {
+  G.setIdeas([
+    document.getElementById("idea1").value,
+    document.getElementById("idea2").value,
+    document.getElementById("idea3").value,
+  ]);
+  alert("Ideas guardadas en el proyector.");
+};
+document.getElementById("saveEnc").onclick = () => {
+  G.recordEncuesta({
+    q1: +document.getElementById("eq1").value,
+    q2: +document.getElementById("eq2").value,
+    q3: +document.getElementById("eq3").value,
+    hands: +document.getElementById("ehands").value,
+  });
+  alert("Encuesta guardada.");
+};
+
+async function boot() {
+  await G.initContent("contenido.json");
+  if (G.adminIsUnlocked()) { showPanel(); renderPanel(); }
+  else showLogin();
+  window.addEventListener("civica-state", renderPanel);
+}
+boot();
+</script>
+</body>
+</html>
