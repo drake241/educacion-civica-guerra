@@ -91,6 +91,28 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
 .world-svg-game,
 .world-scene-game { /* legacy */ }
 
+.world-scene-chunks {
+  background: #dceef7;
+  min-height: min(46vh, 480px);
+  border-radius: 14px;
+  box-shadow: 0 4px 18px rgba(70, 100, 130, 0.1);
+}
+.world-scene-chunks::after { display: none; }
+.world-balance-neutral {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #c8d0d8;
+  color: #5c6670;
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+.world-svg-chunks {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0 0 14px 14px;
+}
 .world-scene-soft {
   background: #e8f1f6;
   min-height: min(44vh, 440px);

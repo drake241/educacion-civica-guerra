@@ -1,43 +1,105 @@
-/** Mapa suave: dos países reconocibles, sin números; movimiento solo tras decisiones */
+/** Mapa isométrico por chunks — un solo territorio unido, dos países + frontera */
 const CivicaWorldMap = (() => {
-  function countryOpacity(meters, scoreFn) {
-    const s = scoreFn(meters);
-    if (s < 0) return 0.45;
-    return 0.72 + (s / 100) * 0.28;
+  const TW = 86;
+  const TH = 43;
+  const DEPTH = 15;
+  const OX = 478;
+  const OY = 62;
+
+  const PAL = {
+    valmira: { top: "#8fcf9a", right: "#6fb883", left: "#5a9f6e", flag: "#2d6a4f" },
+    cerroAzul: { top: "#8ecae6", right: "#6eb5d4", left: "#5a9fbf", flag: "#1d3557" },
+    neutral: { top: "#d1d9e0", right: "#b8c2cc", left: "#9aa6b2", flag: "#94a3b8" },
+  };
+
+  /** Chunks conectados (misma masa de tierra) */
+  const CHUNKS = [
+    { id: "v2", c: 1, r: 0, f: "valmira" },
+    { id: "v1", c: 0, r: 1, f: "valmira", capital: true },
+    { id: "v3", c: 1, r: 1, f: "valmira" },
+    { id: "v4", c: 0, r: 2, f: "valmira" },
+    { id: "n2", c: 2, r: 0, f: "neutral", border: true },
+    { id: "n1", c: 2, r: 1, f: "neutral", border: true },
+    { id: "n3", c: 1, r: 2, f: "neutral", border: true },
+    { id: "c5", c: 3, r: 0, f: "cerroAzul" },
+    { id: "c1", c: 3, r: 1, f: "cerroAzul" },
+    { id: "c2", c: 4, r: 1, f: "cerroAzul", capital: true },
+    { id: "c3", c: 2, r: 2, f: "cerroAzul" },
+    { id: "c4", c: 3, r: 2, f: "cerroAzul" },
+  ];
+
+  function isoCenter(c, r) {
+    return {
+      x: OX + (c - r) * (TW / 2),
+      y: OY + (c + r) * (TH / 2),
+    };
   }
 
-  function troopDots(pathD, color, active) {
+  function factionOpacity(f, vm, cm, scoreFn) {
+    const m = f === "valmira" ? vm : f === "cerroAzul" ? cm : null;
+    if (!m) return 1;
+    const s = scoreFn(m);
+    if (s < 0) return 0.5;
+    return 0.82 + (s / 100) * 0.18;
+  }
+
+  function drawChunk(cx, cy, f, opts = {}) {
+    const p = PAL[f] || PAL.neutral;
+    const w = TW / 2;
+    const h = TH / 2;
+    const d = DEPTH;
+    const top = `${cx},${cy - h} ${cx + w},${cy} ${cx},${cy + h} ${cx - w},${cy}`;
+    const left = `${cx - w},${cy} ${cx},${cy + h} ${cx},${cy + h + d} ${cx - w},${cy + d}`;
+    const right = `${cx},${cy + h} ${cx + w},${cy} ${cx + w},${cy + d} ${cx},${cy + h + d}`;
+
+    const tower = `
+      <g transform="translate(${cx}, ${cy - 6})">
+        <rect x="-5" y="-14" width="10" height="12" rx="1" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="0.8"/>
+        <polygon points="-7,-14 0,-22 7,-14" fill="#e2e8f0"/>
+        ${
+          f !== "neutral"
+            ? `<rect x="5" y="-20" width="9" height="6" rx="1" fill="${p.flag}">
+                 <animate attributeName="width" values="9;7;9" dur="2.5s" repeatCount="indefinite"/>
+               </rect>`
+            : `<line x1="0" y1="-22" x2="0" y2="-8" stroke="#94a3b8" stroke-width="1"/>`
+        }
+      </g>`;
+
+    const pulse =
+      opts.border && opts.pulse
+        ? `<animate attributeName="opacity" values="1;0.72;1" dur="1.8s" repeatCount="indefinite"/>`
+        : "";
+
+    return `
+    <g class="world-chunk world-chunk-${f}" opacity="${opts.opacity ?? 1}">
+      <polygon points="${left}" fill="${p.left}"/>
+      <polygon points="${right}" fill="${p.right}"/>
+      <polygon points="${top}" fill="${p.top}" stroke="#ffffff55" stroke-width="1">${pulse}</polygon>
+      ${tower}
+      ${
+        opts.capital
+          ? `<text x="${cx}" y="${cy + h + d + 14}" text-anchor="middle" fill="#64748b" font-size="9" font-weight="600">${f === "valmira" ? "San Verde" : "Puerto Azul"}</text>`
+          : ""
+      }
+    </g>`;
+  }
+
+  function squadMotion(from, to, color, delay, active) {
     if (!active) return "";
-    return [0, 0.8, 1.6]
+    const path = `M ${from.x} ${from.y - 10} Q ${(from.x + to.x) / 2} ${from.y - 28} ${to.x} ${to.y - 10}`;
+    const dots = [-6, 0, 6]
       .map(
-        (begin) => `
-      <circle r="4" fill="${color}" opacity="0.85">
-        <animateMotion dur="2.8s" begin="${begin}s" repeatCount="indefinite" path="${pathD}"/>
-      </circle>`
+        (dx) =>
+          `<circle r="3.5" fill="${color}" stroke="#fff" stroke-width="1" opacity="0.9">
+             <animateMotion dur="2.4s" begin="${delay}s" repeatCount="indefinite" path="${path}"/>
+           </circle>`
       )
       .join("");
-  }
-
-  function crisisMarks(icons, x, y) {
-    const em = { hambre: "🍞", aranceles: "📦", protestas: "📢", caos: "⚡" };
-    return icons
-      .slice(0, 3)
-      .map(
-        (ic, i) =>
-          `<text x="${x + i * 22}" y="${y}" font-size="16" opacity="0.9">${em[ic.id] || "•"}</text>`
-      )
-      .join("");
+    return `<path d="${path}" fill="none" stroke="${color}" stroke-width="1" opacity="0.25" stroke-dasharray="4 5"/>${dots}`;
   }
 
   function render(container, opts) {
-    const {
-      paises,
-      valmiraMeters: vm,
-      cerroMeters: cm,
-      scoreFn,
-      statusIcons,
-      subphase = "lobby",
-    } = opts;
+    const { paises, valmiraMeters: vm, cerroMeters: cm, scoreFn, subphase = "lobby" } = opts;
     if (!container) return;
 
     const vScore = scoreFn(vm);
@@ -45,106 +107,56 @@ const CivicaWorldMap = (() => {
     const vSum = Math.max(1, vScore < 0 ? 1 : vScore);
     const cSum = Math.max(1, cScore < 0 ? 1 : cScore);
     const vPct = Math.round((vSum / (vSum + cSum)) * 100);
-    const vIcons = statusIcons?.(vm) ?? [];
-    const cIcons = statusIcons?.(cm) ?? [];
-
     const afterAction = subphase === "reveal" || subphase === "consequence";
-    const pathV = "M 255 248 Q 340 232 418 258";
-    const pathC = "M 705 258 Q 620 238 542 258";
 
-    container.innerHTML = `
-<div class="world-scene world-scene-soft" role="img" aria-label="Mapa de ${paises.valmira.nombreCorto} y ${paises.cerroAzul.nombreCorto}">
-  <div class="world-balance" aria-hidden="true">
-    <div class="world-balance-valmira" style="flex: ${vPct}"><span>${paises.valmira.nombreCorto}</span></div>
-    <div class="world-balance-cerro" style="flex: ${100 - vPct}"><span>${paises.cerroAzul.nombreCorto}</span></div>
-  </div>
-  <svg class="world-svg world-svg-soft" viewBox="0 0 960 460" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="seaSoft" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#b8d4e8"/>
-        <stop offset="100%" stop-color="#d4e8f2"/>
-      </linearGradient>
-      <linearGradient id="valmiraFill" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#9dccab"/>
-        <stop offset="100%" stop-color="#7fb893"/>
-      </linearGradient>
-      <linearGradient id="cerroFill" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#9ec5e8"/>
-        <stop offset="100%" stop-color="#7ba3c0"/>
-      </linearGradient>
-    </defs>
-    <rect width="960" height="460" fill="url(#seaSoft)"/>
-
-    <!-- Valmira: península oeste -->
-    <g opacity="${countryOpacity(vm, scoreFn).toFixed(2)}">
-      <path fill="url(#valmiraFill)" stroke="#6b9080" stroke-width="1.5" stroke-linejoin="round"
-        d="M 28 320
-           C 20 260, 35 190, 75 140
-           C 120 95, 200 85, 280 100
-           C 350 115, 400 155, 418 210
-           C 430 250, 425 290, 400 340
-           C 360 395, 280 420, 190 410
-           C 100 400, 45 370, 28 320 Z"/>
-      <path fill="#b7ddb9" opacity="0.45" stroke="none"
-        d="M 90 200 C 150 175, 240 180, 300 210 C 260 260, 170 280, 110 250 Z"/>
-      <path fill="none" stroke="#8ab89a" stroke-width="1" opacity="0.6"
-        d="M 130 195 Q 175 240, 210 290"/>
-      <ellipse cx="175" cy="268" rx="18" ry="11" fill="#a8dadc" opacity="0.55"/>
-    </g>
-
-    <!-- Cerro Azul: costa este -->
-    <g opacity="${countryOpacity(cm, scoreFn).toFixed(2)}">
-      <path fill="url(#cerroFill)" stroke="#6b8a9e" stroke-width="1.5" stroke-linejoin="round"
-        d="M 542 258
-           C 560 200, 610 150, 680 125
-           C 760 100, 850 115, 910 165
-           C 945 210, 950 280, 930 340
-           C 900 400, 820 430, 720 425
-           C 620 420, 540 390, 500 340
-           C 475 300, 480 270, 542 258 Z"/>
-      <path fill="#c5d8e8" opacity="0.4" stroke="none"
-        d="M 650 200 L 720 175 L 780 210 L 740 260 L 670 275 Z"/>
-      <path fill="#94a3b8" opacity="0.35"
-        d="M 620 210 L 660 175 L 700 195 L 680 235 Z"/>
-    </g>
-
-    <!-- Frontera (solo línea suave) -->
-    <path fill="none" stroke="#c4a882" stroke-width="2" stroke-dasharray="6 8" opacity="0.85"
-      d="M 418 210 C 440 240, 455 280, 470 320 C 490 280, 520 250, 542 258"/>
-    <text x="478" y="198" text-anchor="middle" fill="#8b7355" font-size="11" font-weight="600" opacity="0.9">Frontera</text>
-
-    <!-- Capitales (sin números) -->
-    <g font-family="system-ui,sans-serif">
-      <circle cx="220" cy="255" r="5" fill="#fff" stroke="#6b9080" stroke-width="1.5"/>
-      <text x="220" y="238" text-anchor="middle" fill="#4a6741" font-size="11" font-weight="600">San Verde</text>
-      <circle cx="740" cy="285" r="5" fill="#fff" stroke="#6b8a9e" stroke-width="1.5"/>
-      <text x="740" y="268" text-anchor="middle" fill="#3d5a6c" font-size="11" font-weight="600">Puerto Azul</text>
-    </g>
-
-    ${crisisMarks(vIcons, 120, 130)}
-    ${crisisMarks(cIcons, 800, 130)}
-
-    <!-- Rutas: solo visibles tras una acción -->
-    ${
-      afterAction
-        ? `
-    <path d="${pathV}" fill="none" stroke="#7a9a7a" stroke-width="1.5" stroke-dasharray="5 7" opacity="0.5"/>
-    <path d="${pathC}" fill="none" stroke="#7a9ab0" stroke-width="1.5" stroke-dasharray="5 7" opacity="0.5"/>
-    ${troopDots(pathV, "#5a7a5a", true)}
-    ${troopDots(pathC, "#5a7a9a", true)}
-    `
-        : ""
+    const centers = {};
+    const sorted = [...CHUNKS].sort((a, b) => a.c + a.r - (b.c + b.r));
+    let chunkSvg = "";
+    for (const ch of sorted) {
+      const { x, y } = isoCenter(ch.c, ch.r);
+      centers[ch.id] = { x, y };
+      chunkSvg += drawChunk(x, y, ch.f, {
+        capital: ch.capital,
+        border: ch.border,
+        pulse: afterAction && ch.id === "n1",
+        opacity: factionOpacity(ch.f, vm, cm, scoreFn),
+      });
     }
 
-    <text x="200" y="445" text-anchor="middle" fill="#5c6b5c" font-size="13" font-weight="600">${paises.valmira.nombreCorto}</text>
-    <text x="760" y="445" text-anchor="middle" fill="#5c6b78" font-size="13" font-weight="600">${paises.cerroAzul.nombreCorto}</text>
-    <text x="480" y="448" text-anchor="middle" fill="#94a3b8" font-size="10">Cordillera del Sur</text>
+    const animLayer = afterAction
+      ? `
+      ${squadMotion(centers.v1, centers.n1, PAL.valmira.left, 0, true)}
+      ${squadMotion(centers.v3, centers.n1, PAL.valmira.left, 0.5, true)}
+      ${squadMotion(centers.c2, centers.n1, PAL.cerroAzul.left, 0.2, true)}
+      ${squadMotion(centers.c1, centers.n1, PAL.cerroAzul.left, 0.7, true)}
+    `
+      : "";
+
+    container.innerHTML = `
+<div class="world-scene world-scene-chunks" role="img" aria-label="Territorio unido de Valmira y Cerro Azul">
+  <div class="world-balance world-balance-chunks" aria-hidden="true">
+    <div class="world-balance-valmira" style="flex:${vPct}"><span>${paises.valmira.nombreCorto}</span></div>
+    <div class="world-balance-neutral" style="flex:0 0 52px"><span>Frontera</span></div>
+    <div class="world-balance-cerro" style="flex:${100 - vPct}"><span>${paises.cerroAzul.nombreCorto}</span></div>
+  </div>
+  <svg class="world-svg world-svg-chunks" viewBox="0 0 960 480" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="chunkSea" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#b8deef"/>
+        <stop offset="100%" stop-color="#d8eef8"/>
+      </linearGradient>
+    </defs>
+    <rect width="960" height="480" fill="url(#chunkSea)"/>
+    <ellipse cx="480" cy="430" rx="340" ry="38" fill="#9ecae1" opacity="0.35"/>
+    ${chunkSvg}
+    <g class="world-units">${animLayer}</g>
+    <text x="480" y="468" text-anchor="middle" fill="#7a8a99" font-size="11">Cordillera del Sur · tierra unida</text>
   </svg>
-  ${
-    afterAction
-      ? `<p class="world-action-hint">Movimiento en la frontera tras la última decisión.</p>`
-      : `<p class="world-action-hint world-action-hint-idle">Esperando la próxima acción de los países…</p>`
-  }
+  <p class="world-action-hint${afterAction ? "" : " world-action-hint-idle"}">${
+      afterAction
+        ? "Escuadrones se mueven hacia la frontera tras la decisión."
+        : "El mapa espera la próxima decisión de los países."
+    }</p>
 </div>`;
   }
 
