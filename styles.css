@@ -78,13 +78,44 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+.world-scene:not(.world-scene-game) {
   background: #0c1445;
   min-height: min(42vh, 420px);
 }
-@media (min-width: 900px) {
-  .world-scene { min-height: 440px; }
+.world-power-bar {
+  display: flex;
+  height: 28px;
+  border: 3px solid #1a1d21;
+  border-radius: 8px 8px 0 0;
+  overflow: hidden;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fff;
 }
+.world-power-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 6px;
+}
+.world-power-valmira { background: linear-gradient(180deg, #52b788, #2d6a4f); }
+.world-power-cerro { background: linear-gradient(180deg, #4895ef, #1d3557); }
+.world-svg-game {
+  border: 3px solid #1a1d21;
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+}
+.world-scene-game {
+  background: #b8a88a;
+  min-height: min(48vh, 460px);
+}
+.world-scene-game::after { display: none; }
 .world-scene::after {
   content: "";
   position: absolute;
