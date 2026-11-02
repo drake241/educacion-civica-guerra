@@ -93,9 +93,14 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 16px 16px;
+  background-size: 8px 8px;
   image-rendering: pixelated;
-  opacity: 0.5;
+  opacity: 0.35;
+}
+.world-svg .world-city text {
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.55);
+  stroke-width: 3px;
 }
 .world-stars {
   position: absolute;
