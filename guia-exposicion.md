@@ -4,10 +4,19 @@ Proyecto Educación Cívica — CTP Mercedes Norte. Integrantes: Derek Quintero 
 
 ## Antes de clase
 
-1. En la laptop: `cd Educacion_Civica_Sistemas_Gobierno && python3 -m http.server 8080`
-2. Proyector: [http://localhost:8080/index.html](http://localhost:8080/index.html)
-3. Facilitador: [http://localhost:8080/admin.html](http://localhost:8080/admin.html) — contraseña **4125**
-4. Presentación Canva: https://canva.link/dpw9vvm1g5k921v
+### En línea (recomendado)
+
+1. Proyector: https://drake241.github.io/educacion-civica-guerra/
+2. Facilitador (misma laptop, otra pestaña): https://drake241.github.io/educacion-civica-guerra/admin.html — contraseña **4125**
+3. Presentación Canva: https://canva.link/dpw9vvm1g5k921v
+
+Repositorio: https://github.com/drake241/educacion-civica-guerra
+
+### Sin internet (respaldo)
+
+```bash
+cd Educacion_Civica_Sistemas_Gobierno && python3 -m http.server 8080
+```
 
 ## División (2 min)
 
