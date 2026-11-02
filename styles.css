@@ -84,38 +84,60 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   background: #0c1445;
   min-height: min(42vh, 420px);
 }
-.world-power-bar {
-  display: flex;
-  height: 28px;
-  border: 3px solid #1a1d21;
-  border-radius: 8px 8px 0 0;
-  overflow: hidden;
-  font-size: 0.7rem;
-  font-weight: 800;
-  color: #fff;
+.world-power-bar,
+.world-power-seg,
+.world-power-valmira,
+.world-power-cerro,
+.world-svg-game,
+.world-scene-game { /* legacy */ }
+
+.world-scene-soft {
+  background: #e8f1f6;
+  min-height: min(44vh, 440px);
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(80, 100, 120, 0.12);
 }
-.world-power-seg {
+.world-scene-soft::after { display: none; }
+.world-balance {
+  display: flex;
+  height: 26px;
+  border-radius: 12px 12px 0 0;
+  overflow: hidden;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.world-balance-valmira {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 3rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding: 0 6px;
+  background: linear-gradient(180deg, #9dccab, #7fb893);
+  min-width: 4rem;
 }
-.world-power-valmira { background: linear-gradient(180deg, #52b788, #2d6a4f); }
-.world-power-cerro { background: linear-gradient(180deg, #4895ef, #1d3557); }
-.world-svg-game {
-  border: 3px solid #1a1d21;
-  border-top: none;
-  border-radius: 0 0 12px 12px;
+.world-balance-cerro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #9ec5e8, #7ba3c0);
+  min-width: 4rem;
 }
-.world-scene-game {
-  background: #b8a88a;
-  min-height: min(48vh, 460px);
+.world-svg-soft {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0 0 14px 14px;
 }
-.world-scene-game::after { display: none; }
+.world-action-hint {
+  margin: 0;
+  padding: 0.45rem 0.75rem 0.65rem;
+  font-size: 0.78rem;
+  color: #64748b;
+  text-align: center;
+  background: #eef4f8;
+  border-radius: 0 0 14px 14px;
+}
+.world-action-hint-idle { opacity: 0.85; font-style: italic; }
 .world-scene::after {
   content: "";
   position: absolute;

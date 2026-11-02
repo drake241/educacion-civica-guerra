@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proyector — Valmira vs Cerro Azul</title>
-<link rel="stylesheet" href="styles.css?v=20261101d">
+<link rel="stylesheet" href="styles.css?v=20261101e">
 </head>
 <body>
 <div class="wrap login-box" id="login">
@@ -28,7 +28,7 @@
   <div class="card"><h2>Eventos entre países</h2><ul id="eventLog"></ul></div>
   <section class="world-map-section" aria-labelledby="worldMapTitle">
     <h2 id="worldMapTitle">Vista desde el cielo</h2>
-    <p class="note world-map-lead">Territorios, bases con números y tropas hacia la frontera (estilo juego de mapa).</p>
+    <p class="note world-map-lead">Dos países en el mapa; el movimiento aparece solo después de cada decisión.</p>
     <div class="world-map-wrap" id="worldMap" aria-live="polite"></div>
   </section>
   <p class="error hidden" id="err"></p>
@@ -37,7 +37,7 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script src="js/config.js?v=20261101b"></script>
 <script src="js/game-content.js?v=20261101b"></script>
-<script src="js/world-map.js?v=20261101d"></script>
+<script src="js/world-map.js?v=20261101e"></script>
 <script src="js/supabase-api.js?v=20261101b"></script>
 <script>
 const loginEl = document.getElementById("login");
@@ -86,7 +86,8 @@ function renderMap() {
     statusIcons: CivicaContent.statusIcons,
     scoreFn: CivicaContent.score,
     meterLabel: CivicaContent.meterLabel,
-    phase: room.phase,
+    statusIcons: CivicaContent.statusIcons,
+    subphase: room.subphase,
   });
 }
 
