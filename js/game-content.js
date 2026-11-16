@@ -63,6 +63,32 @@ const CivicaContent = (() => {
     return METER_LABELS[key] ?? key;
   }
 
+  const REGIMEN_LABELS = {
+    parlamentario: "Parlamentarista",
+    presidencialista: "Presidencialista",
+  };
+
+  function regimenLabel(regimen) {
+    return REGIMEN_LABELS[regimen] ?? regimen;
+  }
+
+  const SUBPHASE_LABELS = {
+    lobby: "Espera",
+    intro: "Crisis",
+    discuss: "Debate",
+    vote: "Votación",
+    reveal: "Resultados",
+    consequence: "Consecuencias",
+    ending: "Final",
+  };
+
+  function subphaseLabel(subphase, phase) {
+    if (phase === "finished") return "Fin de partida";
+    return SUBPHASE_LABELS[subphase] ?? subphase;
+  }
+
+  const METER_KEYS = ["alimentos", "comercio", "estabilidad", "apoyo"];
+
   function statusIcons(meters) {
     const icons = [];
     if ((meters.alimentos ?? 100) < 35) icons.push({ id: "hambre", label: "Poca comida" });
@@ -150,6 +176,9 @@ const CivicaContent = (() => {
     isCollapsed,
     score,
     meterLabel,
+    regimenLabel,
+    subphaseLabel,
+    METER_KEYS,
     statusIcons,
     computeEnding,
     tallyValmiraOptions,

@@ -1,0 +1,380 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{graphicx}
+\usepackage[margin=1.8cm]{geometry}
+\usepackage{hyperref}
+
+\definecolor{valmira}{HTML}{2D6A4F}
+\definecolor{cerro}{HTML}{1D3557}
+\definecolor{line}{HTML}{C5D4EB}
+\definecolor{warn}{HTML}{9D0208}
+
+\titleformat{\section}{\Large\bfseries\color{cerro}}{}{0em}{}[\color{line}\titlerule]
+\titleformat{\subsection}{\large\bfseries\color{valmira}}{}{0em}{}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small Valmira vs Cerro Azul --- Guía de situación}
+\fancyhead[R]{\small\thepage}
+
+\newcommand{\headrow}[1]{\textcolor{white}{\textbf{#1}}}
+
+\setlist[itemize]{leftmargin=1.4em, itemsep=0.25em}
+\setlist[enumerate]{leftmargin=1.6em, itemsep=0.25em}
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries\color{cerro}Conflicto en la Cordillera del Sur}\\[0.4em]
+{\large Situación, opciones y consecuencias por país}\\[0.35em]
+{\normalsize Educación Cívica --- Sistemas de gobierno \quad CTP Mercedes Norte}\\[0.2em]
+{\small Derek Quintero \quad Raquel Solano Vega \quad \today}
+\end{center}
+
+\vspace{0.5em}
+
+\section{Resumen ejecutivo}
+
+En la región ficticia \textbf{Cordillera del Sur} estalló una crisis entre dos vecinos: la \textbf{República de Valmira} (régimen \textbf{parlamentario}, inspirado en España, Alemania o Reino Unido) y la \textbf{República de Cerro Azul} (régimen \textbf{presidencialista}, inspirado en Costa Rica). Semanas de disputa fronteriza dejaron soldados en ambos lados, miedo en las ciudades y cobertura diaria en los medios.
+
+La simulación en clase tiene \textbf{5 rondas de decisión}. Cada país elige una política por ronda; las decisiones modifican cuatro \textbf{medidores} (escala 0--100). Si \textbf{cualquier medidor llega a 0}, ese país \textbf{colapsa} y ya no puede gobernar. Al final se calcula paz, victoria relativa, colapso o empate según puntajes y condiciones de paz.
+
+\section{Los dos bandos y cómo deciden}
+
+\begin{tabularx}{\textwidth}{@{}lXX@{}}
+\toprule
+\rowcolor{cerro}
+\headrow{Aspecto} & \headrow{Valmira (parlamentario)} & \headrow{Cerro Azul (presidencialista)} \\
+\midrule
+Quién propone & Diputados y primer ministro en debate & El \textbf{presidente} propone la opción \\
+Quién aprueba & \textbf{Mayoría} de votos entre jugadores de Valmira & \textbf{Asambleístas}: más votos \emph{sí} que \emph{no} \\
+Color en mapa & Verde (\#2D6A4F) & Azul (\#1D3557) \\
+Si no hay acuerdo & Estabilidad $-5$; cuenta penalización de régimen & Apoyo del pueblo $-3$; penalización de régimen \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.8em}
+\textbf{Nota pedagógica:} ganar la simulación \emph{no} prueba que un régimen sea ``mejor''; muestra cómo cada sistema decide \textbf{bajo presión} (guerra, hambre, sanciones).
+
+\section{Medidores iniciales y reglas numéricas}
+
+\subsection{Punto de partida (ambos países, igual)}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Medidor} & \textbf{Inicio} & \textbf{Umbral alerta (icono en mapa)} & \textbf{Colapso} \\
+\midrule
+Alimentos / Comida & 55 & $< 35$ $\rightarrow$ icono \emph{Hambruna} & $\leq 0$ \\
+Comercio & 55 & $< 35$ $\rightarrow$ \emph{Aranceles / comercio difícil} & $\leq 0$ \\
+Estabilidad / Orden & 50 & $< 30$ $\rightarrow$ \emph{Inestabilidad} & $\leq 0$ \\
+Apoyo del pueblo & 50 & $< 30$ $\rightarrow$ \emph{Protestas} & $\leq 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Cómo se calculan los números}
+
+\begin{itemize}
+  \item Cada opción suma o resta puntos a uno o más medidores (ver tablas por ronda).
+  \item Tras cada cambio, los valores se \textbf{redondean} y se \textbf{limitan} entre 0 y 100.
+  \item \textbf{Puntaje nacional} (si no hay colapso): promedio simple
+    \[
+      \text{Puntaje} = \frac{\text{Alimentos} + \text{Comercio} + \text{Estabilidad} + \text{Apoyo}}{4}.
+    \]
+  \item País colapsado: puntaje $= -1$ (pierde ante cualquier rival en pie).
+\end{itemize}
+
+\subsection{Opciones bloqueadas (requisito de comercio)}
+
+Algunas medidas exigen comercio mínimo; si el país ya destruyó el comercio, \textbf{no puede elegirlas}:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Ronda & Opción & Comercio mínimo requerido \\
+\midrule
+1 --- Frontera & C) Cerrar comercio con el vecino & $\geq 15$ \\
+2 --- Hambruna & B) Comprar comida de afuera & $\geq 10$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Eventos cruzados (afectan la narrativa entre países)}
+
+\begin{itemize}
+  \item Ronda 1, opción C (bloqueo): \emph{``El vecino también siente el cierre comercial.''}
+  \item Ronda 3, opción C (aranceles): \emph{``El vecino responde con impuestos parecidos.''}
+\end{itemize}
+
+\section{Situación inicial: empieza la guerra}
+
+\textbf{Titular:} Valmira y Cerro Azul pelean en la Cordillera del Sur.
+
+\textbf{Contexto compartido:} tropas y tanques en la frontera; familias preguntan si habrá más combates; el ejército necesita comida y combustible en pocos días. Valmira debe resolver en parlamento; Cerro Azul con presidente y asamblea. \textbf{Consecuencia simétrica:} ambos arrancan con los mismos medidores; las diferencias salen solo de las votaciones y de las decisiones del rival.
+
+\section{Rondas: situación, opciones y consecuencias}
+
+Cada tabla indica el \textbf{cambio en puntos} por medidor al aplicar la opción en \textbf{un} país (Valmira o Cerro Azul por separado). El titular es lo que ven los alumnos en celular tras la ronda.
+
+\subsection{Ronda 1 --- Soldados en la frontera}
+
+\textbf{Situación:} campamentos y tanques; presión por decidir entre diálogo, refuerzo militar o presión económica.
+
+\begin{longtable}{@{}p{0.9cm}p{4.2cm}rrrrp{3.2cm}@{}}
+\toprule
+\textbf{Opt.} & \textbf{Política} & \textbf{Alim.} & \textbf{Com.} & \textbf{Ord.} & \textbf{Apoyo} & \textbf{Titular / notas} \\
+\midrule
+\endhead
+A & Hablar con el otro país & 0 & +5 & $-5$ & +10 &
+  Diálogo; frente más calmado; \textbf{ruta de paz}. \\
+B & Llamar a más soldados & $-5$ & $-5$ & +15 & $-5$ &
+  Más tropas; mercados nerviosos. \\
+C & Cerrar comercio con el vecino & $-5$ & $-15$ & +5 & $-5$ &
+  Camiones detenidos; requiere comercio $\geq 15$; \textbf{evento cruzado}. \\
+\bottomrule
+\end{longtable}
+
+\textbf{Lectura por bando:}
+\begin{itemize}
+  \item \textbf{Valmira (parlamentario):} la opción A suele alinear con mayorías que buscan legitimidad (apoyo +10), pero diputados divididos pueden penalizar estabilidad ($-5$).
+  \item \textbf{Cerro Azul (presidencial):} B refuerza imagen de comando (+orden), pero el presidente necesita mayoría en asamblea o pierde apoyo por parálisis.
+  \item \textbf{Ambos:} C es la más destructiva para comercio ($-15$); si ambos la usan, la región entra rápido en escasez y bloqueos mutuos.
+\end{itemize}
+
+\subsection{Ronda 2 --- Poca comida (hambruna)}
+
+\textbf{Situación:} graneros vacíos; precios altos; camiones con miedo en carreteras.
+
+\begin{longtable}{@{}p{0.9cm}p{4.2cm}rrrrp{3.2cm}@{}}
+\toprule
+\textbf{Opt.} & \textbf{Política} & \textbf{Alim.} & \textbf{Com.} & \textbf{Ord.} & \textbf{Apoyo} & \textbf{Titular / notas} \\
+\midrule
+A & Repartir porciones justas (racionamiento) & +10 & 0 & +5 & $-15$ &
+  Hay bodegas, pero protestas en plazas. \\
+B & Comprar comida de afuera & +20 & $-12$ & 0 & +5 &
+  Trigo importado; cuenta del Estado alta; comercio $\geq 10$. \\
+C & Tomar grano de graneros grandes & +25 & $-8$ & $-10$ & $-20$ &
+  Pan hoy, confianza rota mañana. \\
+\bottomrule
+\end{longtable}
+
+\textbf{Estadística útil:} en una partida ``solo paz'', dos rondas seguidas de A en ambos países pueden bajar apoyo de 50 a 20 ($-15$ cada vez), activando \textbf{protestas} ($<30$) sin recuperarlo con diálogo.
+
+\textbf{Lectura por bando:}
+\begin{itemize}
+  \item \textbf{Valmira:} racionar puede verse como justicia distributiva, pero el parlamento recibe el costo político (apoyo $-15$).
+  \item \textbf{Cerro Azul:} importar alimenta mesas (+20 alimentos) si aún hay comercio; si la guerra cerró rutas, queda expropiar o racionar.
+  \item \textbf{C (riesgo extremo):} máximo alimento corto plazo (+25) pero peor caída de apoyo ($-20$) y orden ($-10$) de todas las opciones de la ronda.
+\end{itemize}
+
+\subsection{Ronda 3 --- Otros países nos presionan (sanciones)}
+
+\textbf{Situación:} potencias lejanas amenazan con cortar comercio si no baja la guerra.
+
+\begin{longtable}{@{}p{0.9cm}p{4.2cm}rrrrp{3.2cm}@{}}
+\toprule
+\textbf{Opt.} & \textbf{Política} & \textbf{Alim.} & \textbf{Com.} & \textbf{Ord.} & \textbf{Apoyo} & \textbf{Titular / notas} \\
+\midrule
+A & Negociar y firmar acuerdos & +5 & +12 & $-5$ & +5 &
+  Vuelven barcos; \textbf{ruta de paz}. \\
+B & Buscar otros compradores & 0 & $-5$ & 0 & 0 &
+  Precios impredecibles. \\
+C & Subir impuestos al comercio enemigo & $-10$ & $-18$ & +8 & $-8$ &
+  Guerra de precios; \textbf{evento cruzado}. \\
+\bottomrule
+\end{longtable}
+
+\textbf{Lectura por bando:}
+\begin{itemize}
+  \item \textbf{Valmira:} A exige mayoría que acepte ``ceder orgullo'' a cambio de +12 comercio (la mayor subida comercial de la partida).
+  \item \textbf{Cerro Azul:} C permite al presidente mostrar firmeza (+orden 8), pero asamblea escéptica puede rechazar y aplicar penalización de régimen.
+  \item \textbf{Regional:} si Valmira negocia (A) y Cerro Azul aranceles (C), uno recupera mercados y el otro profundiza aislamiento --- típico desequilibrio de puntaje final.
+\end{itemize}
+
+\subsection{Ronda 4 --- Oferta de pausa en la pelea (tregua)}
+
+\textbf{Situación:} mediadores proponen cesar fuego y mesa de negociación.
+
+\begin{longtable}{@{}p{0.9cm}p{4.2cm}rrrrp{3.2cm}@{}}
+\toprule
+\textbf{Opt.} & \textbf{Política} & \textbf{Alim.} & \textbf{Com.} & \textbf{Ord.} & \textbf{Apoyo} & \textbf{Titular / notas} \\
+\midrule
+A & Aceptar la pausa y hablar & +5 & +8 & $-8$ & +12 &
+  Silencio en el frente; \textbf{ruta de paz}. \\
+B & Pausa con exigencias duras & 0 & +3 & +5 & $-3$ &
+  Paz frágil. \\
+C & No parar; seguir la guerra & $-8$ & $-10$ & +12 & $-10$ &
+  Guerra continúa; cansancio en hogares. \\
+\bottomrule
+\end{longtable}
+
+\textbf{Lectura por bando:}
+\begin{itemize}
+  \item \textbf{A} es la mejor para apoyo (+12) en toda la ronda 4; suma banderas de \texttt{peacePath} si ambos países la eligen varias veces.
+  \item \textbf{C} sube orden (+12) como la movilización, pero agota alimentos y comercio --- camino típico hacia colapso si se repite.
+  \item \textbf{Valmira vs Cerro Azul:} un parlamento puede aprobar tregua mientras el presidente vecino la rechaza, generando ventaja moral pero no paz automática.
+\end{itemize}
+
+\subsection{Ronda 5 --- Última gran decisión (desenlace)}
+
+\textbf{Situación:} meses de conflicto; los medidores muestran si el país aguanta; decisión de paz, fuerza negociada o ultimátum.
+
+\begin{longtable}{@{}p{0.9cm}p{4.2cm}rrrrp{3.2cm}@{}}
+\toprule
+\textbf{Opt.} & \textbf{Política} & \textbf{Alim.} & \textbf{Com.} & \textbf{Ord.} & \textbf{Apoyo} & \textbf{Titular / notas} \\
+\midrule
+A & Firmar paz & +8 & +10 & $-5$ & +15 &
+  Plumas en lugar de balas; \textbf{ruta de paz}. \\
+B & Negociar desde la fuerza & $-5$ & $-5$ & +10 & $-5$ &
+  Ventaja en mapa; paz lejana. \\
+C & Ultimátum: rendirse o seguir & $-12$ & $-15$ & +15 & $-15$ &
+  Apuesta total; mayor penalización económica de la partida. \\
+\bottomrule
+\end{longtable}
+
+\textbf{Lectura por bando:}
+\begin{itemize}
+  \item \textbf{A} maximiza apoyo (+15) y comercio (+10); clave para final \emph{Paz en la cordillera}.
+  \item \textbf{C} puede subir orden a niveles peligrosos si el comercio ya estaba bajo --- riesgo real de llevar comercio o alimentos a 0 en una sola jugada.
+\end{itemize}
+
+\section{Rutas de paz y finales posibles}
+
+\subsection{Opciones marcadas como vía de paz (\texttt{peacePath})}
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Ronda & Opción de paz \\
+\midrule
+1 Frontera & A --- Hablar con el otro país \\
+3 Sanciones & A --- Negociar acuerdos \\
+4 Tregua & A --- Aceptar pausa y hablar \\
+5 Desenlace & A --- Firmar paz \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+El sistema registra si \textbf{Valmira} y \textbf{Cerro Azul} tomaron suficientes decisiones de paz. Final \textbf{Paz en la cordillera} requiere, además de no colapsar:
+
+\begin{itemize}
+  \item Banderas de paz activas en \textbf{ambos} países;
+  \item Alimentos $\geq 40$ en Valmira \textbf{y} en Cerro Azul;
+  \item Apoyo $\geq 45$ en Valmira \textbf{y} en Cerro Azul.
+\end{itemize}
+
+\subsection{Otros desenlaces}
+
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+\toprule
+\rowcolor{cerro}
+\headrow{Final} & \headrow{Condición (resumen)} \\
+\midrule
+Valmira sale mejor & Sin colapso; puntaje promedio mayor que Cerro Azul. \\
+Cerro Azul sale mejor & Igual, puntaje mayor que Valmira. \\
+Colapso Valmira / Cerro Azul & Cualquier medidor del país llega a 0. \\
+Empate tenso & Mismo puntaje; o ambos colapsan (victoria mutua negativa). \\
+\bottomrule
+\end{tabularx}
+
+\vspace{0.6em}
+En partidas reales, el \textbf{promedio inicial es 52,5} puntos $\bigl(\frac{55+55+50+50}{4}\bigr)$. Tras 5 rondas, un país que solo elige opciones ``de guerra'' (muchas B/C) suele terminar entre \textbf{25 y 40} de puntaje; uno con ruta de paz (varias A) puede mantenerse \textbf{por encima de 45}, acercándose al umbral de final pacífico.
+
+\section{Ejemplo numérico: dos caminos en 5 rondas (un país)}
+
+Suponga que \textbf{Valmira} inicia en 55/55/50/50 y elige siempre la opción más belicista posible sin bloqueos: 1B, 2C, 3C, 4C, 5C (efectos acumulados):
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Tras ronda & Alimentos & Comercio & Orden & Apoyo \\
+\midrule
+Inicio & 55 & 55 & 50 & 50 \\
+1 (movilizar) & 50 & 50 & 65 & 45 \\
+2 (expropiar) & 75 & 42 & 55 & 25 \\
+3 (aranceles) & 65 & 24 & 63 & 17 \\
+4 (rechazar tregua) & 57 & 14 & 75 & 7 \\
+5 (ultimátum) & 45 & 0 & 90 & 0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Consecuencia:} en la ronda 5, \textbf{apoyo = 0} $\Rightarrow$ \textbf{colapso}. Comercio también llega a 0 en la misma jugada. Este camino ilustra por qué ``ganar en el mapa'' (orden alto) puede destruir legitimidad y economía.
+
+Por contraste, \textbf{solo opciones A de paz} (1A, 3A, 4A, 5A; ronda 2 con B si comercio lo permite):
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Tras ronda & Alimentos & Comercio & Orden & Apoyo \\
+\midrule
+Inicio & 55 & 55 & 50 & 50 \\
+1 (diplomacia) & 55 & 60 & 45 & 60 \\
+2 (importar) & 75 & 48 & 45 & 65 \\
+3 (acuerdos) & 80 & 60 & 40 & 70 \\
+4 (tregua) & 85 & 68 & 32 & 82 \\
+5 (tratado) & 93 & 78 & 27 & 97 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Puntaje final:} $\frac{93+78+27+97}{4} \approx 73{,}75$. Cumple umbrales de alimentos y apoyo para \textbf{paz} si Cerro Azul hace ruta similar y no colapsa.
+
+\section{Consecuencias pedagógicas para cada lado}
+
+\subsection{Valmira (parlamentario)}
+
+\begin{itemize}
+  \item \textbf{Ventaja:} muchas voces en debate; mayoría clara para opciones de diálogo (apoyo ciudadano).
+  \item \textbf{Costo:} división interna baja estabilidad cuando el parlamento no vota; rechazos suman penalizaciones y $-5$ orden.
+  \item \textbf{Bajo presión:} hambruna y protestas castigan más a un gobierno que necesita legitimidad parlamentaria.
+\end{itemize}
+
+\subsection{Cerro Azul (presidencialista)}
+
+\begin{itemize}
+  \item \textbf{Ventaja:} una propuesta presidencial clara (movilizar, ultimátum) puede ejecutarse rápido si la asamblea dice sí.
+  \item \textbf{Costo:} si la asamblea rechaza, cae apoyo ($-3$) y suma penalizaciones; ``parálisis'' duele más al modelo presidencial.
+  \item \textbf{Bajo presión:} decisiones fuertes suben orden pero erosionan apoyo si la guerra se prolonga.
+\end{itemize}
+
+\subsection{La región (ambos)}
+
+\begin{itemize}
+  \item Bloqueos y aranceles cruzados reducen comercio en \textbf{ambos} bandos; la estadística empeora aunque solo un país cerrara fronteras primero.
+  \item El final pacífico exige \textbf{cooperación simétrica}, no solo que un país ``gane''.
+  \item Colapso de un vecino da victoria nominal al otro, pero no implica prosperidad: el ganador puede llegar con medidores bajos.
+\end{itemize}
+
+\section{Referencias de clase}
+
+\begin{itemize}
+  \item Juego en vivo: \url{https://drake241.github.io/educacion-civica-guerra/}
+  \item Proyector (PIN 4125): \texttt{proyector.html} \quad Alumnos: \texttt{join.html}
+  \item Orden de rondas: frontera $\rightarrow$ hambruna $\rightarrow$ sanciones $\rightarrow$ tregua $\rightarrow$ desenlace
+  \item Fuente de datos del juego: \texttt{contenido.json} (versión 2, región Cordillera del Sur)
+\end{itemize}
+
+\vspace{1em}
+\begin{center}
+\small\textit{Documento generado para apoyo de exposición y discusión en aula. Los números coinciden con la lógica del simulador (medidores 0--100, colapso en 0, finales en \texttt{game-content.js}).}
+\end{center}
+
+\end{document}

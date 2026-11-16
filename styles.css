@@ -66,14 +66,45 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   margin: 1rem 0;
 }
 @media (min-width: 800px) { .map-grid { grid-template-columns: 1fr 1fr; } }
-.world-map-section {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 3px solid #cbd5e1;
-}
-.world-map-section h2 { margin-bottom: 0.25rem; }
-.world-map-lead { margin-bottom: 0.75rem; }
+.world-map-section { margin-top: 1rem; }
 .world-map-wrap { margin: 0; }
+.projector-wrap { padding-bottom: 2rem; }
+.projector-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.projector-header h1 { margin-bottom: 0.15rem; }
+.projector-header-actions { margin-top: 0; }
+.projector-map { margin: 0.75rem 0 1rem; }
+.projector-controls { margin-top: 0; }
+.phase-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+.phase-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: var(--muted);
+}
+.phase-chip.is-active { background: var(--accent); color: #fff; }
+.phase-chip.is-done { background: #cbd5e1; color: #334155; }
+.round-label { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.75rem; }
+.crisis-banner-compact h2 { font-size: 1.35rem; margin: 0 0 0.35rem; }
+.crisis-banner-compact p { margin: 0.25rem 0; }
+.crisis-more { margin-top: 0.5rem; font-size: 0.88rem; opacity: 0.95; }
+.crisis-more summary { cursor: pointer; font-weight: 600; }
+.details-card summary { cursor: pointer; font-weight: 600; padding: 0.15rem 0; }
+.event-log-list { margin-top: 0.75rem; padding-left: 1.25rem; font-size: 0.88rem; color: var(--muted); }
+.event-log-list li { margin: 0.35rem 0; }
 .world-scene {
   position: relative;
   border-radius: 16px;
@@ -91,13 +122,97 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
 .world-svg-game,
 .world-scene-game { /* legacy */ }
 
-.world-scene-chunks {
-  background: #dceef7;
-  min-height: min(46vh, 480px);
+.world-scene-chunks,
+.world-scene-flat {
+  background: #eef6fa;
+  min-height: min(42vh, 440px);
   border-radius: 14px;
   box-shadow: 0 4px 18px rgba(70, 100, 130, 0.1);
 }
-.world-scene-chunks::after { display: none; }
+.world-scene-chunks::after,
+.world-scene-flat::after { display: none; }
+.world-scene-flat { overflow: hidden; }
+.world-hud-row {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem 0;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 640px) {
+  .world-hud-row { grid-template-columns: 1fr; }
+}
+.world-hud-panel {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 10px;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.74rem;
+  border-left: 4px solid var(--valmira);
+}
+.world-hud-cerro { border-left-color: var(--cerro); }
+.world-hud-regimen {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+  margin: 0.1rem 0 0.25rem;
+}
+.world-hud-meter { margin-top: 0.25rem; }
+.world-hud-meter-label { color: var(--muted); }
+.world-hud-meter-val { float: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.world-hud-bar {
+  clear: both;
+  height: 5px;
+  background: #e2e8f0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+.world-hud-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.55s ease;
+}
+.world-hud-bar.bar-warn > span { background: var(--warn); }
+.world-hud-bar.bar-danger > span { background: var(--danger); }
+.world-delta {
+  font-size: 0.65rem;
+  font-weight: 700;
+  margin-left: 0.25rem;
+}
+.world-delta-up { color: #15803d; }
+.world-delta-down { color: var(--danger); }
+.world-svg-flat { border-radius: 0 0 14px 14px; }
+.world-chunk-clickable { cursor: pointer; outline: none; }
+.world-chunk-clickable:focus-visible polygon { stroke-width: 2.5; stroke: #0f172a; }
+.world-chunk-pulse polygon {
+  animation: chunk-border-pulse 1.6s ease-in-out infinite;
+}
+.world-chunk-hot polygon {
+  animation: chunk-fill-flash 0.9s ease-out 1;
+}
+.world-scene-delta .world-hud-bar > span {
+  animation: bar-pop 0.5s ease;
+}
+@keyframes chunk-border-pulse {
+  0%, 100% { stroke-opacity: 1; }
+  50% { stroke-opacity: 0.45; }
+}
+@keyframes chunk-fill-flash {
+  0% { filter: brightness(1.15); }
+  100% { filter: brightness(1); }
+}
+@keyframes bar-pop {
+  0% { transform: scaleY(1.8); }
+  100% { transform: scaleY(1); }
+}
+.world-map-tip {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.78rem;
+  color: #475569;
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+}
 .world-balance-neutral {
   display: flex;
   align-items: center;
@@ -234,6 +349,9 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
   text-align: left;
 }
 .option-card p { margin-top: 0.35rem; font-size: 0.9rem; color: var(--muted); }
+.option-details { margin-top: 0.35rem; font-size: 0.88rem; }
+.option-details summary { cursor: pointer; color: var(--muted); font-weight: 600; }
+.tag-regimen { display: inline-block; margin-left: 0.35rem; vertical-align: middle; }
 .country-picked {
   padding: 0.75rem 1rem;
   border-radius: 10px;

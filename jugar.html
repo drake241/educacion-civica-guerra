@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Jugar — Valmira vs Cerro Azul</title>
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20261102">
 </head>
 <body>
 <div class="wrap" id="app"><p>Cargando…</p></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="js/config.js"></script>
-<script src="js/game-content.js"></script>
+<script src="js/game-content.js?v=20261102"></script>
 <script src="js/supabase-api.js"></script>
 <script>
 const app = document.getElementById("app");
@@ -34,30 +34,36 @@ function render() {
   const round = CivicaContent.getRound(room.round_index);
   const pais = content?.paises?.[player.country];
   const meters = player.country === "valmira" ? room.valmira_meters : room.cerro_meters;
+  const regimen = pais?.regimen ? CivicaContent.regimenLabel(pais.regimen) : "";
 
-  let html = `<p><span class="tag tag-${player.country === "valmira" ? "valmira" : "cerro"}">${pais?.nombreCorto}</span></p>`;
+  let html = `<p><span class="tag tag-${player.country === "valmira" ? "valmira" : "cerro"}">${pais?.nombreCorto}</span>
+    <span class="note tag-regimen">Sistema ${regimen.toLowerCase()}</span></p>`;
   html += `<p class="lead">Tu rol: <strong>${roleLabel(player.role, player.country)}</strong></p>`;
 
   if (sub === "lobby") {
-    html += `<div class="card"><p>Esperá a que el profesor empiece la actividad…</p></div>`;
+    html += `<div class="card"><p>Esperá a que el profesor empiece la actividad.</p></div>`;
   } else if (sub === "intro") {
     html += `<div class="card"><h2>${content.introGuerra.titulo}</h2><p>${content.introGuerra.lead}</p>`;
-    if (content.introGuerra.contexto) html += `<p>${content.introGuerra.contexto}</p>`;
+    if (content.introGuerra.contexto) {
+      html += `<details class="crisis-more"><summary>Contexto</summary><p>${content.introGuerra.contexto}</p></details>`;
+    }
     html += `</div>`;
   } else if (sub === "discuss" && round) {
     html += `<div class="card"><h2>${round.titulo}</h2><p>${round.lead}</p>`;
-    if (round.contexto) html += `<p>${round.contexto}</p>`;
-    html += `<p class="note">Hablá con tu grupo. Después abren la votación.</p>`;
+    if (round.contexto) {
+      html += `<details class="crisis-more"><summary>Contexto</summary><p>${round.contexto}</p></details>`;
+    }
+    html += `<p class="note">Debate en grupo; después votan.</p>`;
     for (const o of round.opciones) {
       html += `<div class="option-card"><strong>${o.etiqueta}</strong>`;
-      if (o.descripcion) html += `<p>${o.descripcion}</p>`;
+      if (o.descripcion) {
+        html += `<details class="option-details"><summary>Qué implica</summary><p>${o.descripcion}</p></details>`;
+      }
       html += `</div>`;
     }
     html += `</div>`;
   } else if (sub === "vote" && round) {
-    html += `<div class="card"><h2>Votación</h2><p><strong>${round.titulo}</strong></p>`;
-    if (round.contexto) html += `<p class="note">${round.contexto}</p>`;
-    html += `<div id="voteUi"></div></div>`;
+    html += `<div class="card"><h2>Votación — ${round.titulo}</h2><div id="voteUi"></div></div>`;
   } else if (sub === "reveal") {
     const rr = room.round_results?.[String(room.round_index)] ?? room.round_results?.[room.round_index];
     html += `<div class="card"><h2>Resultados</h2>`;
@@ -69,11 +75,10 @@ function render() {
           : null;
       html += `<p>Valmira: <strong>${vOpt?.etiqueta ?? rr.valmira_chosen ?? "—"}</strong></p>`;
       html += `<p>Cerro Azul: <strong>${cOpt?.etiqueta ?? (rr.cerro_chosen === "rechazada" ? "Asamblea dijo no" : rr.cerro_chosen ?? "—")}</strong></p>`;
-      html += `<p class="note">Asamblea Cerro Azul: ${rr.cerro_assembly?.yes ?? 0} a favor / ${rr.cerro_assembly?.no ?? 0} en contra</p>`;
+      html += `<p class="note">Asamblea: ${rr.cerro_assembly?.yes ?? 0} sí · ${rr.cerro_assembly?.no ?? 0} no</p>`;
     } else html += `<p>El profesor mostrará los resultados…</p>`;
     html += `</div>`;
   } else if (sub === "consequence") {
-    const h = player.country === "valmira" ? room.lastHeadlines?.valmira : null;
     const log = room.event_log?.[room.event_log.length - 1];
     const headline = log?.[player.country === "valmira" ? "valmira" : "cerro"] ?? "Consecuencias aplicadas.";
     html += `<div class="card"><h2>Consecuencia</h2><p class="headline">${headline}</p></div>`;
@@ -84,7 +89,7 @@ function render() {
     html += `<div class="winner-box"><h2>${fin.titulo ?? fin.id}</h2><p>${fin.texto ?? ""}</p></div>`;
     html += renderMeters(meters);
   } else {
-    html += `<div class="card"><p>Fase: ${sub}</p></div>`;
+    html += `<div class="card"><p>${CivicaContent.subphaseLabel(sub, room.phase)}</p></div>`;
   }
 
   if (sub !== "consequence" && sub !== "ending" && room.phase === "playing") {
@@ -98,8 +103,8 @@ function render() {
 
 function renderMeters(m) {
   if (!m) return "";
-  let s = `<div class="card"><h2>Tu país ahora</h2>`;
-  for (const k of ["alimentos", "comercio", "estabilidad", "apoyo"]) {
+  let s = `<div class="card"><h2>Tu país</h2>`;
+  for (const k of CivicaContent.METER_KEYS) {
     s += `<div class="meter"><label><span>${CivicaContent.meterLabel(k)}</span><span>${m[k]}</span></label><div class="bar"><span style="width:${m[k]}%"></span></div></div>`;
   }
   s += `</div>`;
@@ -108,7 +113,9 @@ function renderMeters(m) {
 
 function optionVoteHtml(round, o) {
   let h = `<div class="option-card"><button type="button" class="btn btn-secondary vote-opt" data-id="${o.id}" style="width:100%;margin-bottom:0.35rem">${o.etiqueta}</button>`;
-  if (o.descripcion) h += `<p>${o.descripcion}</p>`;
+  if (o.descripcion) {
+    h += `<details class="option-details"><summary>Qué implica</summary><p>${o.descripcion}</p></details>`;
+  }
   h += `</div>`;
   return h;
 }
@@ -118,7 +125,7 @@ function buildVoteUi(round) {
   if (!el) return;
 
   if (player.country === "valmira") {
-    el.innerHTML = `<p class="note">Elegí una opción (cada diputado vota).</p>` +
+    el.innerHTML = `<p class="note">Elegí una opción (cada diputado/a vota).</p>` +
       round.opciones.map((o) => optionVoteHtml(round, o)).join("");
     el.querySelectorAll(".vote-opt").forEach((btn) => {
       btn.onclick = async () => {
@@ -137,8 +144,8 @@ function buildVoteUi(round) {
     });
   } else {
     el.innerHTML = `<p>¿Aprueba la propuesta del presidente?</p>
-      <button class="btn" id="vYes">Sí, a favor</button>
-      <button class="btn btn-secondary" id="vNo">No, en contra</button>`;
+      <button class="btn" id="vYes">Sí</button>
+      <button class="btn btn-secondary" id="vNo">No</button>`;
     document.getElementById("vYes").onclick = () => CivicaSupabase.submitVote(player.player_id, "yes");
     document.getElementById("vNo").onclick = () => CivicaSupabase.submitVote(player.player_id, "no");
   }

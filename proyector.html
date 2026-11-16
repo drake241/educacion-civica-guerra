@@ -4,41 +4,46 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proyector — Valmira vs Cerro Azul</title>
-<link rel="stylesheet" href="styles.css?v=20261101g">
+<link rel="stylesheet" href="styles.css?v=20261102">
 </head>
 <body>
 <div class="wrap login-box" id="login">
   <div class="card login-box">
-    <h1>Proyector (profesor)</h1>
+    <h1>Proyector</h1>
     <label class="field">Contraseña</label>
     <input type="password" id="pin" value="">
     <button class="btn" id="pinBtn">Entrar</button>
   </div>
 </div>
-<div class="wrap hidden" id="main">
-  <h1>Mapa — Cordillera del Sur</h1>
-  <p class="lead">Sala <strong id="roomCode">—</strong> · <a id="joinLink" href="#" target="_blank">Enlace alumnos</a></p>
-  <div class="btn-row">
-    <button class="btn" id="createRoom">Nueva sala</button>
-    <button class="btn" id="startWar">Iniciar guerra</button>
-  </div>
-  <p>Fase: <strong id="phaseTxt"></strong> · Ronda: <strong id="roundTxt"></strong></p>
-  <div class="crisis-banner" id="crisisBox"></div>
-  <div class="btn-row" id="controls"></div>
-  <div class="card"><h2>Eventos entre países</h2><ul id="eventLog"></ul></div>
-  <section class="world-map-section" aria-labelledby="worldMapTitle">
-    <h2 id="worldMapTitle">Vista desde el cielo</h2>
-    <p class="note world-map-lead">Un mismo territorio en bloques; las escuadras se mueven solo después de cada decisión.</p>
-    <div class="world-map-wrap" id="worldMap" aria-live="polite"></div>
-  </section>
+<div class="wrap hidden projector-wrap" id="main">
+  <header class="projector-header">
+    <div>
+      <h1>Cordillera del Sur</h1>
+      <p class="lead">Sala <strong id="roomCode">—</strong></p>
+    </div>
+    <div class="btn-row projector-header-actions">
+      <button type="button" class="btn btn-secondary" id="copyJoin">Copiar enlace alumnos</button>
+      <a class="btn btn-secondary" id="joinLink" href="#" target="_blank" rel="noopener">Abrir join</a>
+      <button class="btn" id="createRoom">Nueva sala</button>
+      <button class="btn" id="startWar">Iniciar guerra</button>
+    </div>
+  </header>
+  <div class="phase-strip" id="phaseStrip" aria-label="Fase de la ronda"></div>
+  <p class="round-label">Ronda <strong id="roundTxt">1</strong></p>
+  <div class="crisis-banner crisis-banner-compact" id="crisisBox"></div>
+  <div class="world-map-wrap projector-map" id="worldMap" aria-live="polite"></div>
+  <div class="btn-row projector-controls" id="controls"></div>
+  <details class="card details-card">
+    <summary>Historial de eventos (<span id="eventCount">0</span>)</summary>
+    <ul id="eventLog" class="event-log-list"></ul>
+  </details>
   <p class="error hidden" id="err"></p>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="js/config.js?v=20261101b"></script>
-<script src="js/game-content.js?v=20261101b"></script>
-<script src="js/world-map.js?v=20261101g"></script>
-<script src="js/supabase-api.js?v=20261101b"></script>
+<script src="js/config.js?v=20261102"></script>
+<script src="js/game-content.js?v=20261102"></script>
+<script src="js/world-map.js?v=20261102"></script>
+<script src="js/supabase-api.js?v=20261102"></script>
 <script>
 const loginEl = document.getElementById("login");
 const mainEl = document.getElementById("main");
@@ -46,6 +51,10 @@ let roomId = sessionStorage.getItem("civica_room_id");
 let roomCode = sessionStorage.getItem("civica_room_code");
 let room = null;
 let players = [];
+/** @type {{ valmira?: object, cerro?: object } | null} */
+let lastMetersSnapshot = null;
+
+const PHASE_ORDER = ["lobby", "intro", "discuss", "vote", "reveal", "consequence"];
 
 document.getElementById("pinBtn").onclick = () => {
   if (document.getElementById("pin").value !== TEACHER_PIN) {
@@ -71,7 +80,7 @@ async function ensureRoom() {
   sessionStorage.setItem("civica_room_code", roomCode);
 }
 
-function renderMap() {
+function renderMap(prevV, prevC) {
   const el = document.getElementById("worldMap");
   const c = CivicaContent.get();
   if (!room || !el) return;
@@ -79,26 +88,65 @@ function renderMap() {
     el.innerHTML = `<p class="error">No cargó el mapa. Refrescá con Ctrl+Shift+R.</p>`;
     return;
   }
+  const log = room.event_log ?? [];
+  const last = log[log.length - 1];
   CivicaWorldMap.render(el, {
     paises: c.paises,
     valmiraMeters: room.valmira_meters,
     cerroMeters: room.cerro_meters,
-    statusIcons: CivicaContent.statusIcons,
+    prevValmira: prevV,
+    prevCerro: prevC,
     scoreFn: CivicaContent.score,
     meterLabel: CivicaContent.meterLabel,
     statusIcons: CivicaContent.statusIcons,
+    regimenLabel: CivicaContent.regimenLabel,
     subphase: room.subphase,
+    lastCross: last?.cross ?? null,
   });
+}
+
+function renderPhaseStrip() {
+  const strip = document.getElementById("phaseStrip");
+  const sub = room?.subphase ?? "lobby";
+  const subIdx = PHASE_ORDER.indexOf(sub);
+  strip.innerHTML = PHASE_ORDER.map((id) => {
+    const active = id === sub ? " is-active" : "";
+    const done = subIdx >= 0 && PHASE_ORDER.indexOf(id) < subIdx ? " is-done" : "";
+    return `<span class="phase-chip${active}${done}">${CivicaContent.subphaseLabel(id, room?.phase)}</span>`;
+  }).join("");
+}
+
+function renderCrisis() {
+  const crisisBox = document.getElementById("crisisBox");
+  const round = CivicaContent.getRound(room.round_index);
+  if (room.subphase === "intro") {
+    const ig = CivicaContent.get().introGuerra;
+    crisisBox.innerHTML = `<h2>${ig.titulo}</h2><p>${ig.lead}</p>` +
+      (ig.contexto ? `<details class="crisis-more"><summary>Contexto</summary><p>${ig.contexto}</p></details>` : "");
+  } else if (round) {
+    crisisBox.innerHTML = `<h2>${round.titulo}</h2><p>${round.lead}</p>` +
+      (round.contexto && (room.subphase === "discuss" || room.subphase === "intro")
+        ? `<details class="crisis-more"><summary>Contexto</summary><p>${round.contexto}</p></details>`
+        : "");
+  } else {
+    crisisBox.innerHTML = `<h2>Fin de la partida</h2>`;
+  }
 }
 
 function renderEvents() {
   const ul = document.getElementById("eventLog");
   const log = room?.event_log ?? [];
-  ul.innerHTML = log.slice().reverse().map((e) => {
-    let t = `Ronda ${e.round}: ${e.valmira} | ${e.cerro}`;
-    if (e.cross) t += ` → ${e.cross}`;
-    return `<li>${t}</li>`;
-  }).join("") || "<li>—</li>";
+  document.getElementById("eventCount").textContent = String(log.length);
+  const recent = log.slice(-8).reverse();
+  ul.innerHTML =
+    recent
+      .map((e) => {
+        let t = `R${e.round}: ${e.valmira}`;
+        if (e.cerro) t += ` · ${e.cerro}`;
+        if (e.cross) t += ` → ${e.cross}`;
+        return `<li>${t}</li>`;
+      })
+      .join("") || "<li>—</li>";
 }
 
 function renderControls() {
@@ -152,7 +200,7 @@ async function applyConsequences() {
   let vDelta = { estabilidad: -5 };
   let cDelta = { apoyo: -3 };
   let vHead = "En Valmira no hubo acuerdo claro.";
-  let cHead = "En Cerro Azul la asamblea dijo no al presidente.";
+  let cHead = "En Cerro Azul la asamblea rechazó la propuesta presidencial.";
   let cross = null;
   let peaceV = false;
   let peaceC = false;
@@ -195,30 +243,46 @@ async function calcEnding() {
 }
 
 async function refresh() {
+  const prevV = lastMetersSnapshot?.valmira ? { ...lastMetersSnapshot.valmira } : null;
+  const prevC = lastMetersSnapshot?.cerro ? { ...lastMetersSnapshot.cerro } : null;
+
   room = await CivicaSupabase.fetchRoom(roomId);
   players = await CivicaSupabase.fetchPlayers(roomId);
+
   document.getElementById("roomCode").textContent = roomCode;
-  document.getElementById("joinLink").href = joinUrl(roomCode);
-  document.getElementById("joinLink").textContent = joinUrl(roomCode);
-  document.getElementById("phaseTxt").textContent = `${room.phase} / ${room.subphase}`;
+  const url = joinUrl(roomCode);
+  document.getElementById("joinLink").href = url;
+
   document.getElementById("roundTxt").textContent = String(room.round_index + 1);
-  const round = CivicaContent.getRound(room.round_index);
-  const crisisBox = document.getElementById("crisisBox");
-  if (room.subphase === "intro") {
-    const ig = CivicaContent.get().introGuerra;
-    crisisBox.innerHTML = `<h2>${ig.titulo}</h2><p>${ig.lead}</p>${ig.contexto ? `<p>${ig.contexto}</p>` : ""}`;
-  } else if (round) {
-    crisisBox.innerHTML = `<h2>${round.titulo}</h2><p>${round.lead}</p>${round.contexto ? `<p>${round.contexto}</p>` : ""}`;
-  } else crisisBox.innerHTML = `<p>Fin de la partida</p>`;
-  renderMap();
+  renderPhaseStrip();
+  renderCrisis();
+  renderMap(prevV, prevC);
   renderEvents();
   renderControls();
+
+  lastMetersSnapshot = {
+    valmira: { ...room.valmira_meters },
+    cerro: { ...room.cerro_meters },
+  };
 }
+
+document.getElementById("copyJoin").onclick = async () => {
+  try {
+    await navigator.clipboard.writeText(joinUrl(roomCode));
+    document.getElementById("copyJoin").textContent = "¡Copiado!";
+    setTimeout(() => {
+      document.getElementById("copyJoin").textContent = "Copiar enlace alumnos";
+    }, 2000);
+  } catch {
+    alert(joinUrl(roomCode));
+  }
+};
 
 document.getElementById("createRoom").onclick = async () => {
   sessionStorage.removeItem("civica_room_id");
   sessionStorage.removeItem("civica_room_code");
   roomId = roomCode = null;
+  lastMetersSnapshot = null;
   await ensureRoom();
   await refresh();
 };
@@ -232,7 +296,7 @@ document.getElementById("startWar").onclick = async () => {
 async function boot() {
   try {
     CivicaSupabase.init();
-    await CivicaContent.load("contenido.json?v=20261101b");
+    await CivicaContent.load("contenido.json?v=20261102");
     await ensureRoom();
     await refresh();
     CivicaSupabase.subscribeRoom(roomId, refresh);

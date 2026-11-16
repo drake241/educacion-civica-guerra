@@ -48,3 +48,19 @@ Guion detallado: [`guia-exposicion.md`](guia-exposicion.md)
 python3 -m http.server 8080
 # http://localhost:8080/join.html
 ```
+
+## Prueba E2E (profe + alumnos)
+
+Contra **GitHub Pages** (Supabase debe estar configurado en `js/config.js` del deploy):
+
+```bash
+npm install
+npx playwright install chromium
+npm run test:e2e
+```
+
+Otra URL base:
+
+```bash
+CIVICA_BASE_URL=http://127.0.0.1:8080 npm run test:e2e
+```

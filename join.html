@@ -18,8 +18,8 @@
     <div id="countryPick">
       <p class="field">País</p>
       <div class="btn-row" id="countryButtons">
-        <button type="button" class="btn country-valmira" id="pickValmira">Valmira (parlamento)</button>
-        <button type="button" class="btn country-cerro" id="pickCerro">Cerro Azul (presidente)</button>
+        <button type="button" class="btn country-valmira" id="pickValmira">Valmira · parlamentarista</button>
+        <button type="button" class="btn country-cerro" id="pickCerro">Cerro Azul · presidencialista</button>
       </div>
     </div>
     <div id="countryLocked" class="hidden"></div>
@@ -62,7 +62,8 @@ function applyCountryUI() {
   locked.classList.remove("hidden");
   const isV = country === "valmira";
   locked.className = `country-picked ${isV ? "country-picked-valmira" : "country-picked-cerro"}`;
-  locked.innerHTML = `<span>Tu equipo: <strong>${isV ? "Valmira" : "Cerro Azul"}</strong></span>
+  const regimen = isV ? "parlamentarista" : "presidencialista";
+  locked.innerHTML = `<span>Tu equipo: <strong>${isV ? "Valmira" : "Cerro Azul"}</strong> (${regimen})</span>
     <button type="button" class="btn btn-link" id="changeCountry">Cambiar equipo</button>`;
   document.getElementById("changeCountry").onclick = () => {
     CivicaSession.clearCountryPref();
