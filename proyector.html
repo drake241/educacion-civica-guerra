@@ -328,6 +328,7 @@ document.getElementById("createRoom").onclick = async () => {
   roomId = roomCode = null;
   lastMetersSnapshot = null;
   await ensureRoom();
+  CivicaSupabase.subscribeRoom(roomId, refresh);
   await refresh();
 };
 
