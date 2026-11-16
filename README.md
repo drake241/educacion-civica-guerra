@@ -64,3 +64,14 @@ Otra URL base:
 ```bash
 CIVICA_BASE_URL=http://127.0.0.1:8080 npm run test:e2e
 ```
+
+## Simular clase (demo profe)
+
+Con el código visible en el proyector:
+
+```bash
+ROOM_CODE=XXXXX node scripts/simulate-class.js
+```
+
+Deja navegadores abiertos y envía votos cuando abrís **Abrir votación** en el proyector (el panel «Votación: N de M» se actualiza solo).
+```

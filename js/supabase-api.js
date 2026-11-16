@@ -76,6 +76,11 @@ const CivicaSupabase = (() => {
         { event: "*", schema: "public", table: "players", filter: `room_id=eq.${roomId}` },
         () => onChange()
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "votes", filter: `room_id=eq.${roomId}` },
+        () => onChange()
+      )
       .subscribe();
   }
 

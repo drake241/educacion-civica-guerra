@@ -105,6 +105,12 @@ h2 { font-size: 1.25rem; margin: 1rem 0 0.5rem; }
 .details-card summary { cursor: pointer; font-weight: 600; padding: 0.15rem 0; }
 .event-log-list { margin-top: 0.75rem; padding-left: 1.25rem; font-size: 0.88rem; color: var(--muted); }
 .event-log-list li { margin: 0.35rem 0; }
+.roster-card { margin-bottom: 0.75rem; padding: 0.65rem 1rem; }
+.roster-summary { font-weight: 600; margin: 0; font-size: 0.95rem; }
+.roster-vote { margin: 0.35rem 0 0; }
+.roster-list { margin: 0.5rem 0 0; padding-left: 0; list-style: none; }
+.roster-list li { margin: 0.3rem 0; font-size: 0.88rem; }
+.roster-role { color: var(--muted); }
 .world-scene {
   position: relative;
   border-radius: 16px;

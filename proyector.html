@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Proyector — Valmira vs Cerro Azul</title>
-<link rel="stylesheet" href="styles.css?v=20261102">
+<link rel="stylesheet" href="styles.css?v=20261103">
 </head>
 <body>
 <div class="wrap login-box" id="login">
@@ -30,6 +30,14 @@
   </header>
   <div class="phase-strip" id="phaseStrip" aria-label="Fase de la ronda"></div>
   <p class="round-label">Ronda <strong id="roundTxt">1</strong></p>
+  <div class="card roster-card" id="rosterCard">
+    <p class="roster-summary" id="rosterSummary">Jugadores: —</p>
+    <p class="roster-vote note hidden" id="rosterVote" aria-live="polite"></p>
+    <details>
+      <summary>Equipo en sala</summary>
+      <ul id="rosterList" class="roster-list"></ul>
+    </details>
+  </div>
   <div class="crisis-banner crisis-banner-compact" id="crisisBox"></div>
   <div class="world-map-wrap projector-map" id="worldMap" aria-live="polite"></div>
   <div class="btn-row projector-controls" id="controls"></div>
@@ -43,7 +51,7 @@
 <script src="js/config.js?v=20261102"></script>
 <script src="js/game-content.js?v=20261102"></script>
 <script src="js/world-map.js?v=20261102"></script>
-<script src="js/supabase-api.js?v=20261102"></script>
+<script src="js/supabase-api.js?v=20261103"></script>
 <script>
 const loginEl = document.getElementById("login");
 const mainEl = document.getElementById("main");
@@ -53,6 +61,7 @@ let room = null;
 let players = [];
 /** @type {{ valmira?: object, cerro?: object } | null} */
 let lastMetersSnapshot = null;
+let votePoll = null;
 
 const PHASE_ORDER = ["lobby", "intro", "discuss", "vote", "reveal", "consequence"];
 
@@ -130,6 +139,36 @@ function renderCrisis() {
         : "");
   } else {
     crisisBox.innerHTML = `<h2>Fin de la partida</h2>`;
+  }
+}
+
+async function renderRoster() {
+  const v = players.filter((p) => p.country === "valmira");
+  const c = players.filter((p) => p.country === "cerroAzul");
+  document.getElementById("rosterSummary").textContent =
+    `${players.length} en sala · Valmira ${v.length} · Cerro Azul ${c.length}`;
+  const ul = document.getElementById("rosterList");
+  ul.innerHTML =
+    players
+      .map((p) => {
+        const tag = p.country === "valmira" ? "valmira" : "cerro";
+        return `<li><span class="tag tag-${tag}">${p.nickname}</span> <span class="roster-role">${roleLabel(p.role, p.country)}</span></li>`;
+      })
+      .join("") || "<li>Nadie ha entrado aún.</li>";
+
+  const voteEl = document.getElementById("rosterVote");
+  if (room?.subphase === "vote" && room?.phase === "playing") {
+    const votes = await CivicaSupabase.fetchVotes(roomId, room.round_index);
+    const voted = new Set(votes.map((x) => x.player_id));
+    const nVoted = players.filter((p) => voted.has(p.id)).length;
+    voteEl.classList.remove("hidden");
+    voteEl.textContent = `Votación: ${nVoted} de ${players.length} ya votaron`;
+  } else if (room?.subphase === "lobby") {
+    voteEl.classList.remove("hidden");
+    voteEl.textContent = "En espera: los alumnos pueden entrar con el código.";
+  } else {
+    voteEl.classList.add("hidden");
+    voteEl.textContent = "";
   }
 }
 
@@ -255,6 +294,7 @@ async function refresh() {
 
   document.getElementById("roundTxt").textContent = String(room.round_index + 1);
   renderPhaseStrip();
+  await renderRoster();
   renderCrisis();
   renderMap(prevV, prevC);
   renderEvents();
@@ -264,6 +304,10 @@ async function refresh() {
     valmira: { ...room.valmira_meters },
     cerro: { ...room.cerro_meters },
   };
+
+  if (votePoll) clearInterval(votePoll);
+  votePoll = null;
+  if (room?.subphase === "vote") votePoll = setInterval(() => renderRoster(), 3000);
 }
 
 document.getElementById("copyJoin").onclick = async () => {
